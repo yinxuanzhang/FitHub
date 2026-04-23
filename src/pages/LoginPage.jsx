@@ -22,7 +22,7 @@ export default function LoginPage({ onLogin }) {
         <button type="submit">Login</button>
       </form>
       <p className="switch-auth">
-        New to GymWeb? <Link to="/register">Create an account</Link>
+        New to FitHub? <Link to="/register">Create an account</Link>
       </p>
     </div>
   );

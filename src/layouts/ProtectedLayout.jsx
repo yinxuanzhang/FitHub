@@ -19,7 +19,7 @@ export default function ProtectedLayout({ onLogout }) {
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <h2>GymWeb</h2>
+        <h2>FitHub</h2>
         <nav>
           {navLinks.map((link) => (
             <NavLink key={link.path} to={link.path} className={({ isActive }) => (isActive ? 'active' : '')}>
