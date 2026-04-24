@@ -10,6 +10,7 @@ export default function LoginPage({ onLogin }) {
     <div className="auth-card">
       <h2>Welcome back</h2>
       <p>Sign in to continue your fitness journey.</p>
+
       <form className="auth-form" onSubmit={handleSubmit}>
         <label>
           Email
@@ -19,10 +20,14 @@ export default function LoginPage({ onLogin }) {
           Password
           <input type="password" placeholder="••••••••" required />
         </label>
-        <button type="submit">Login</button>
+        <button type="submit" style={{ marginTop: '0.5rem' }}>
+          Sign In →
+        </button>
       </form>
+
       <p className="switch-auth">
-        New to FitHub? <Link to="/register">Create an account</Link>
+        New to FitHub?&nbsp;
+        <Link to="/register">Create account</Link>
       </p>
     </div>
   );

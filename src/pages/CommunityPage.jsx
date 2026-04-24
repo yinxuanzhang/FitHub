@@ -7,12 +7,14 @@ export default function CommunityPage() {
     <>
       <PageHeader title="Community" subtitle="Share progress and stay inspired" />
 
-      <section className="card create-post">
-        <h3>Create Post</h3>
+      <article className="card">
+        <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.25rem' }}>
+          Create Post
+        </h3>
         <form className="form-grid">
           <label>
-            What's on your mind?
-            <textarea rows="4" placeholder="Share your win, routine, or tip..." />
+            What&apos;s on your mind?
+            <textarea rows="4" placeholder="Share your win, routine, or tip…" />
           </label>
           <label>
             Upload image
@@ -20,16 +22,18 @@ export default function CommunityPage() {
           </label>
           <button type="button">Publish Post</button>
         </form>
-      </section>
+      </article>
 
       <section className="post-feed">
-        {posts.map((post) => (
-          <PostCard key={post.id} post={post} />
+        {posts.map((post, i) => (
+          <div key={post.id} style={{ animationDelay: `${i * 0.08}s` }}>
+            <PostCard post={post} />
+          </div>
         ))}
       </section>
 
       <button type="button" className="load-more-btn">
-        Load More
+        Load more posts
       </button>
     </>
   );
