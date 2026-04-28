@@ -1,98 +1,116 @@
-import { dashboardData } from '../data/mockData';
-import StatCard from '../components/StatCard';
-import QuickLinkCard from '../components/QuickLinkCard';
+import MonthCalendar from '../components/MonthCalendar';
+import { useAppData } from '../context/AppDataContext';
 
-const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const FULL_DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-function RingProgress({ value, strokeColor, size = 130, label, sublabel }) {
-  const r = 48;
-  const circ = 2 * Math.PI * r;
-  const offset = circ * (1 - value / 100);
+function getThisWeek() {
+  const today = new Date();
+  const dow = today.getDay();
+  const mondayOffset = dow === 0 ? -6 : 1 - dow;
+  const monday = new Date(today);
+  monday.setDate(today.getDate() + mondayOffset);
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return {
+      date: d.toISOString().slice(0, 10),
+      dow: d.getDay(),
+      label: DAY_LABELS[d.getDay()],
+    };
+  });
+}
+
+function WeekProgressRow({ label, weekDays, plannedSet, doneSet }) {
+  const planned = weekDays.filter(d => plannedSet.has(d.dow));
+  const done = planned.filter(d => doneSet.has(d.date));
+  const pct = planned.length > 0 ? Math.round((done.length / planned.length) * 100) : 0;
 
   return (
-    <div className="ring-section">
-      <div className="ring-wrap" style={{ width: size, height: size }}>
-        <svg width={size} height={size} viewBox="0 0 120 120">
-          <circle cx="60" cy="60" r={r} fill="none" stroke="#222" strokeWidth="7" />
-          <circle
-            cx="60" cy="60" r={r}
-            fill="none"
-            stroke={strokeColor}
-            strokeWidth="7"
-            strokeLinecap="round"
-            strokeDasharray={circ}
-            strokeDashoffset={offset}
-            style={{ transition: 'stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1)' }}
-          />
-        </svg>
-        <div className="ring-center">
-          <span className="ring-pct">{value}%</span>
-          <span className="ring-label-text">{label}</span>
-        </div>
+    <div className="week-progress-block">
+      <div className="week-progress-head">
+        <span className="week-progress-label">{label}</span>
+        <span className="week-progress-count">{done.length} / {planned.length} days</span>
       </div>
-      {sublabel && <p className="ring-sublabel">{sublabel}</p>}
+      <div className="progress-track" style={{ marginBottom: '0.75rem' }}>
+        <div className="progress-fill" style={{ width: `${pct}%`, background: 'var(--accent)' }} />
+      </div>
+      <div className="week-day-row">
+        {weekDays.map(d => {
+          const isPlanned = plannedSet.has(d.dow);
+          const isDone = doneSet.has(d.date);
+          return (
+            <div
+              key={d.date}
+              className={`week-day-pip${!isPlanned ? ' week-day-pip--free' : isDone ? ' week-day-pip--done' : ' week-day-pip--pending'}`}
+            >
+              <span className="week-day-pip-label">{d.label}</span>
+              <span className="week-day-pip-icon">{isDone ? '✓' : isPlanned ? '·' : '—'}</span>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
 export default function DashboardPage() {
+  const { workoutPlan, workoutCheckIns, dietPlan, dietCheckIns } = useAppData();
+
   const now = new Date();
-  const dateStr = `${DAYS[now.getDay()]}, ${MONTHS[now.getMonth()]} ${now.getDate()}`;
+  const dateStr = `${FULL_DAYS[now.getDay()]}, ${MONTHS[now.getMonth()]} ${now.getDate()}`;
+  const weekDays = getThisWeek();
+
+  // Workout: planned days = days that have at least one exercise in the plan
+  const workoutPlannedSet = new Set(
+    Object.entries(workoutPlan)
+      .filter(([, v]) => (v.exercises || []).length > 0)
+      .map(([dow]) => Number(dow))
+  );
+  const workoutDoneSet = new Set(workoutCheckIns);
+
+  // Diet: planned days = control days
+  const dietPlannedSet = new Set(dietPlan.controlDays);
+  const dietDoneSet = new Set(dietCheckIns);
 
   return (
     <>
       <div className="dashboard-hero">
         <div>
           <p className="dashboard-date">{dateStr}</p>
-          <h1>Good morning, Alex</h1>
-          <p className="dashboard-subtitle">
-            You&apos;re building something great. Stay consistent.
-          </p>
-        </div>
-        <div className="streak-badge">
-          🔥&nbsp;{dashboardData.currentStreak}-day streak
+          <h1>Good morning 👋</h1>
+          <p className="dashboard-subtitle">Stay consistent, keep improving.</p>
         </div>
       </div>
 
-      <section className="stats-grid">
-        <StatCard title="Diet Goal" value={`${dashboardData.dietProgress}%`} hint="of today's target" />
-        <StatCard title="Workout" value={`${dashboardData.workoutProgress}%`} hint="session complete" />
-        <StatCard title="Today's Score" value={`+${dashboardData.todayScore.diet + dashboardData.todayScore.workout}`} hint="points earned" />
-        <StatCard title="Total Check-Ins" value={dashboardData.totalCheckIns} hint="all time" />
-        <StatCard title="Current Streak" value={`${dashboardData.currentStreak}d`} hint="keep it going" />
-      </section>
+      {/* Weekly progress */}
+      <article className="card">
+        <h3 className="card-section-title" style={{ marginBottom: '1.25rem' }}>This Week</h3>
+        <WeekProgressRow
+          label="🏋️ Workout"
+          weekDays={weekDays}
+          plannedSet={workoutPlannedSet}
+          doneSet={workoutDoneSet}
+        />
+        <div style={{ height: '1.25rem' }} />
+        <WeekProgressRow
+          label="🥗 Diet"
+          weekDays={weekDays}
+          plannedSet={dietPlannedSet}
+          doneSet={dietDoneSet}
+        />
+      </article>
 
-      <section className="two-col">
-        <article className="card" style={{ textAlign: 'center' }}>
-          <p className="section-title" style={{ textAlign: 'left' }}>Diet Progress</p>
-          <RingProgress
-            value={dashboardData.dietProgress}
-            strokeColor="#efefef"
-            label="Nutrition"
-            sublabel={`${dashboardData.dietProgress}% of daily goal`}
-          />
-        </article>
-
-        <article className="card" style={{ textAlign: 'center' }}>
-          <p className="section-title" style={{ textAlign: 'left' }}>Workout Progress</p>
-          <RingProgress
-            value={dashboardData.workoutProgress}
-            strokeColor="#888"
-            label="Training"
-            sublabel={`${dashboardData.workoutProgress}% of session done`}
-          />
-        </article>
-      </section>
-
-      <section>
-        <p className="section-title">Quick Navigation</p>
-        <div className="quick-links-grid">
-          <QuickLinkCard title="Diet" description="Log meals and track macros" to="/diet" />
-          <QuickLinkCard title="Workout" description="Record sets, reps, and weight" to="/workout" />
-          <QuickLinkCard title="Community" description="Share progress and get inspired" to="/community" />
-        </div>
-      </section>
+      {/* Compact calendar */}
+      <article className="card">
+        <p className="section-title" style={{ marginBottom: '1rem' }}>Activity Calendar</p>
+        <MonthCalendar
+          compact
+          workoutCheckIns={workoutCheckIns}
+          dietCheckIns={dietCheckIns}
+        />
+      </article>
     </>
   );
 }

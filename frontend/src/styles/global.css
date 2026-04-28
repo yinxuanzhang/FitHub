@@ -1269,3 +1269,933 @@ tbody tr:hover td {
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* ===== SELECT ===== */
+select {
+  background: #f8f8f8;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 0.9rem;
+  color: var(--text);
+  width: 100%;
+  cursor: pointer;
+  font: inherit;
+  transition: border-color var(--t) var(--ease);
+}
+
+select:focus {
+  outline: none;
+  border-color: #888888;
+}
+
+/* ===== TAB BAR ===== */
+.tab-bar {
+  display: flex;
+  gap: 0.25rem;
+  background: #f0f0f0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.25rem;
+}
+
+.tab-btn {
+  flex: 1;
+  background: transparent !important;
+  color: var(--text-muted) !important;
+  border: none !important;
+  border-radius: 6px !important;
+  padding: 0.55rem 0.75rem !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  transition:
+    background var(--t) var(--ease),
+    color var(--t) var(--ease);
+}
+
+.tab-btn:hover {
+  background: #e4e4e4 !important;
+  color: var(--text) !important;
+}
+
+.tab-btn--active {
+  background: #ffffff !important;
+  color: var(--text) !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08) !important;
+}
+
+/* ===== MONTH CALENDAR ===== */
+.month-calendar {
+  user-select: none;
+}
+
+.cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.cal-month-label {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.cal-nav-btn {
+  padding: 0.35rem 0.7rem !important;
+  font-size: 1.1rem !important;
+  line-height: 1;
+}
+
+.cal-dow-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 0.375rem;
+}
+
+.cal-dow {
+  text-align: center;
+  font-size: 0.67rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.25rem 0;
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+
+.cal-cell {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border-radius: 8px;
+  transition: background var(--t) var(--ease);
+  position: relative;
+  min-height: 40px;
+}
+
+.cal-cell--empty {
+  pointer-events: none;
+}
+
+.cal-cell--clickable {
+  cursor: pointer;
+}
+
+.cal-cell--clickable:hover {
+  background: #f0f0f0;
+}
+
+.cal-cell--today {
+  background: #e8e8e8;
+  font-weight: 700;
+}
+
+.cal-cell--today .cal-day-num {
+  color: var(--accent);
+  font-weight: 800;
+}
+
+.cal-day-num {
+  font-size: 0.8125rem;
+  color: var(--text);
+  line-height: 1;
+}
+
+.cal-dots {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.cal-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.cal-dot--workout {
+  background: #4f8ef7;
+}
+
+.cal-dot--diet {
+  background: #50c878;
+}
+
+.cal-legend {
+  display: flex;
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+  padding-top: 0.875rem;
+  border-top: 1px solid var(--border);
+}
+
+.cal-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* ===== TODAY BANNER ===== */
+.today-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+}
+
+.today-banner-info {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.today-group-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.875rem;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  border: 1px solid;
+  letter-spacing: 0.01em;
+}
+
+.control-day-badge {
+  background: #e8f5ee;
+  color: #2d8a57;
+  border-color: #a3d9b8;
+}
+
+.checkin-done {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #2d8a57;
+  background: #e8f5ee;
+  border: 1px solid #a3d9b8;
+  border-radius: 999px;
+  padding: 0.3rem 0.875rem;
+}
+
+/* ===== COMPLETE BUTTON — DONE STATE ===== */
+.complete-btn--done {
+  background: #2d8a57 !important;
+  cursor: default;
+}
+
+.complete-btn--done:hover {
+  background: #2d8a57 !important;
+}
+
+/* ===== CARD HELPERS ===== */
+.card-row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.card-section-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* ===== UNIT TOGGLE ===== */
+.unit-toggle {
+  display: flex;
+  background: #f0f0f0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.unit-btn {
+  background: transparent !important;
+  color: var(--text-muted) !important;
+  border: none !important;
+  border-radius: 4px !important;
+  padding: 0.25rem 0.625rem !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.03em;
+  transition:
+    background var(--t) var(--ease),
+    color var(--t) var(--ease);
+}
+
+.unit-btn--active {
+  background: #ffffff !important;
+  color: var(--text) !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.08) !important;
+}
+
+/* ===== EXERCISE CARD TOP ===== */
+.exercise-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.875rem;
+}
+
+.exercise-delete-btn {
+  background: transparent !important;
+  color: var(--text-subtle) !important;
+  border: none !important;
+  padding: 0 0.25rem !important;
+  font-size: 1.1rem !important;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.exercise-delete-btn:hover {
+  color: #e05555 !important;
+  background: transparent !important;
+}
+
+/* ===== WEEK PLAN ===== */
+.week-plan-grid {
+  display: grid;
+  gap: 0.625rem;
+}
+
+.week-plan-row {
+  display: grid;
+  grid-template-columns: 48px 1fr 20px;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.week-day-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.muscle-select {
+  margin: 0;
+}
+
+.muscle-color-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: block;
+}
+
+/* ===== CONTROL DAYS GRID ===== */
+.control-days-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.control-day-btn {
+  background: transparent !important;
+  color: var(--text-muted) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+  padding: 0.5rem 1rem !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  min-width: 56px;
+  transition:
+    background var(--t) var(--ease),
+    color var(--t) var(--ease),
+    border-color var(--t) var(--ease);
+}
+
+.control-day-btn:hover {
+  border-color: var(--border-hover) !important;
+  color: var(--text) !important;
+}
+
+.control-day-btn--active {
+  background: #e8f5ee !important;
+  color: #2d8a57 !important;
+  border-color: #a3d9b8 !important;
+}
+
+/* ===== FREE DAY CARD ===== */
+.free-day-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.free-day-content {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.free-day-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.free-day-content h3 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.free-day-content p {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80px;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+/* ===== COMPACT CALENDAR ===== */
+.month-calendar--compact .cal-cell {
+  min-height: 30px;
+  border-radius: 5px;
+}
+
+.month-calendar--compact .cal-day-num {
+  font-size: 0.69rem;
+}
+
+.month-calendar--compact .cal-dot {
+  width: 5px;
+  height: 5px;
+}
+
+.month-calendar--compact .cal-nav {
+  margin-bottom: 0.875rem;
+}
+
+.month-calendar--compact .cal-month-label {
+  font-size: 0.875rem;
+}
+
+.month-calendar--compact .cal-dow {
+  font-size: 0.6rem;
+}
+
+.month-calendar--compact .cal-legend {
+  margin-top: 0.875rem;
+  padding-top: 0.625rem;
+}
+
+/* ===== WEEK PROGRESS (Dashboard) ===== */
+.week-progress-block {
+  display: grid;
+  gap: 0;
+}
+
+.week-progress-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.5rem;
+}
+
+.week-progress-label {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.week-progress-count {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.week-day-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.week-day-pip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 0.375rem 0.25rem;
+  border-radius: 6px;
+  border: 1px solid transparent;
+}
+
+.week-day-pip-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.week-day-pip-icon {
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.week-day-pip--free {
+  background: transparent;
+}
+
+.week-day-pip--free .week-day-pip-icon {
+  color: var(--text-subtle);
+}
+
+.week-day-pip--pending {
+  background: #f5f5f5;
+  border-color: var(--border);
+}
+
+.week-day-pip--pending .week-day-pip-icon {
+  color: var(--text-subtle);
+}
+
+.week-day-pip--done {
+  background: #e8f5ee;
+  border-color: #a3d9b8;
+}
+
+.week-day-pip--done .week-day-pip-label,
+.week-day-pip--done .week-day-pip-icon {
+  color: #2d8a57;
+}
+
+/* ===== DAY SELECTOR (Workout Plan tab) ===== */
+.day-selector {
+  display: flex;
+  gap: 0.25rem;
+  background: #f0f0f0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.25rem;
+}
+
+.day-sel-btn {
+  flex: 1;
+  background: transparent !important;
+  color: var(--text-muted) !important;
+  border: none !important;
+  border-radius: 6px !important;
+  padding: 0.5rem 0.25rem !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 4px !important;
+  transition: background var(--t) var(--ease), color var(--t) var(--ease);
+  position: relative;
+}
+
+.day-sel-btn:hover {
+  background: #e4e4e4 !important;
+  color: var(--text) !important;
+}
+
+.day-sel-btn--active {
+  background: #ffffff !important;
+  color: var(--text) !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08) !important;
+}
+
+.day-sel-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.day-sel-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* ===== MUSCLE GROUP TAGS (multi-select) ===== */
+.muscle-group-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.muscle-tag-btn {
+  background: transparent !important;
+  color: var(--text-muted) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 999px !important;
+  padding: 0.35rem 0.875rem !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  transition:
+    background var(--t) var(--ease),
+    color var(--t) var(--ease),
+    border-color var(--t) var(--ease);
+}
+
+.muscle-tag-btn:hover {
+  border-color: var(--border-hover) !important;
+}
+
+/* ===== MACRO BARS (Diet today) ===== */
+.macro-bars {
+  display: grid;
+  gap: 1rem;
+}
+
+.macro-bar-row {
+  display: grid;
+  gap: 0.375rem;
+}
+
+.macro-bar-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* ===== FOOD LOG ===== */
+.food-log-list {
+  display: grid;
+  gap: 0.5rem;
+  margin-bottom: 0;
+}
+
+.food-log-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  background: #f8f8f8;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--t) var(--ease);
+}
+
+.food-log-row:hover {
+  border-color: var(--border-hover);
+}
+
+.food-log-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.food-log-macros {
+  display: flex;
+  gap: 0.625rem;
+  flex-shrink: 0;
+}
+
+.food-log-macros span {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ===== EXERCISE GROUP SECTION (Plan / Today) ===== */
+.exercise-group-section {
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+  margin-top: 1rem;
+}
+
+.exercise-group-section:first-of-type {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.exercise-group-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.625rem;
+}
+
+.exercise-group-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.exercise-group-count {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-left: auto;
+  font-weight: 500;
+}
+
+/* ===== EXERCISE ROW ===== */
+.exercise-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: var(--radius-sm);
+  background: #f8f8f8;
+  border: 1px solid var(--border);
+  margin-bottom: 0.375rem;
+  transition: border-color var(--t) var(--ease);
+}
+
+.exercise-row:hover {
+  border-color: var(--border-hover);
+}
+
+.exercise-row-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.exercise-row-name {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.exercise-row-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.exercise-row-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 0.2rem;
+}
+
+.exercise-row-stat strong {
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.exercise-row-unit {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.exercise-row-sep {
+  font-size: 0.7rem;
+  color: var(--text-subtle);
+  flex-shrink: 0;
+}
+
+/* ===== ADD EXERCISE TRIGGER BUTTON ===== */
+.add-exercise-trigger {
+  margin-top: 0.375rem;
+  font-size: 0.8rem !important;
+  padding: 0.4rem 0.875rem !important;
+}
+
+/* ===== INLINE EXERCISE FORM ===== */
+.inline-exercise-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.625rem;
+  padding: 0.625rem 0.75rem;
+  background: #f5f5f5;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.iex-name {
+  flex: 1;
+  min-width: 140px;
+  padding: 0.45rem 0.7rem !important;
+  font-size: 0.8125rem !important;
+}
+
+.iex-num {
+  width: 68px;
+  padding: 0.45rem 0.7rem !important;
+  font-size: 0.8125rem !important;
+}
+
+/* ===== WEEKLY PLAN OVERVIEW (Workout Plan) ===== */
+.week-plan-overview {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.75rem;
+  /* allow cards to scroll on very small screens */
+}
+
+.week-plan-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding: 1rem 0.875rem;
+  min-height: 160px;
+  animation: none; /* disable the global card fadeInUp per-card */
+}
+
+.week-plan-card--editing {
+  border-color: var(--accent) !important;
+  background: #fff9f6;
+}
+
+.week-plan-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.week-plan-day-label {
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text);
+}
+
+.week-plan-edit-btn {
+  background: transparent !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-muted) !important;
+  border-radius: 5px !important;
+  padding: 0.18rem 0.5rem !important;
+  font-size: 0.68rem !important;
+  font-weight: 600 !important;
+  flex-shrink: 0;
+}
+
+.week-plan-edit-btn:hover {
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+  background: transparent !important;
+}
+
+.week-plan-edit-btn--active {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: #fff !important;
+}
+
+.week-plan-groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.week-plan-group-tag {
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 0.2rem 0.45rem;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.week-plan-rest-tag {
+  font-size: 0.72rem;
+  color: var(--text-subtle);
+  font-weight: 500;
+}
+
+.week-plan-ex-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.125rem;
+}
+
+.week-plan-ex-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0.375rem 0.5rem;
+  background: #f8f8f8;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+}
+
+.week-plan-ex-name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.week-plan-ex-stat {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.week-plan-ex-stat strong {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.week-plan-empty {
+  font-size: 0.72rem;
+  color: var(--text-subtle);
+  margin-top: auto;
+}
+
+@media (max-width: 900px) {
+  .week-plan-overview {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 540px) {
+  .week-plan-overview {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

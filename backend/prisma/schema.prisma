@@ -21,3 +21,4 @@ model User{
   bio         String?
   createdAt   DateTime @default(now())
 }
+
