@@ -25,10 +25,7 @@ function usePersist(key, def) {
   return [state, set];
 }
 
-// workoutPlan[dow] = {
-//   muscleGroups: string[],
-//   exercisesByGroup: { [group]: [{id,name,sets,reps,weight,unit}] }
-// }
+// workoutPlan[dow] = { muscleGroups: string[] }
 const DEFAULT_WORKOUT_PLAN = {
   0: { muscleGroups: ['rest'],       exercisesByGroup: {} },
   1: { muscleGroups: ['chest'],      exercisesByGroup: {} },
@@ -39,6 +36,16 @@ const DEFAULT_WORKOUT_PLAN = {
   6: { muscleGroups: ['cardio'],     exercisesByGroup: {} },
 };
 
+// workoutRoutines[group] = [{id,name,sets,reps,weight,unit}]
+const DEFAULT_WORKOUT_ROUTINES = {
+  chest: [],
+  shoulders: [],
+  back: [],
+  arms: [],
+  legsglutes: [],
+  cardio: [],
+};
+
 const DEFAULT_DIET_PLAN = {
   controlDays: [1, 2, 3, 4, 5],
   goals: { calories: 2000, protein: 150, fat: 60, carbs: 200 },
@@ -46,6 +53,8 @@ const DEFAULT_DIET_PLAN = {
 
 export function AppDataProvider({ children }) {
   const [workoutPlan, setWorkoutPlan] = usePersist('fh_workout_plan4', DEFAULT_WORKOUT_PLAN);
+  const [workoutRoutines, setWorkoutRoutines] = usePersist('fh_workout_routines1', DEFAULT_WORKOUT_ROUTINES);
+  const [workoutDailyFocus, setWorkoutDailyFocus] = usePersist('fh_workout_daily_focus1', {});
   const [workoutExtraLogs, setWorkoutExtraLogs] = usePersist('fh_workout_extra', {});
   const [workoutCheckIns, setWorkoutCheckIns] = usePersist('fh_workout_checkins', []);
   const [dietPlan, setDietPlan] = usePersist('fh_diet_plan', DEFAULT_DIET_PLAN);
@@ -55,6 +64,8 @@ export function AppDataProvider({ children }) {
   return (
     <Ctx.Provider value={{
       workoutPlan, setWorkoutPlan,
+      workoutRoutines, setWorkoutRoutines,
+      workoutDailyFocus, setWorkoutDailyFocus,
       workoutExtraLogs, setWorkoutExtraLogs,
       workoutCheckIns, setWorkoutCheckIns,
       dietPlan, setDietPlan,

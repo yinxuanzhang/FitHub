@@ -8,7 +8,14 @@ const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function pad2(n) { return String(n).padStart(2, '0'); }
 
-export default function MonthCalendar({ workoutCheckIns = [], dietCheckIns = [], onDayClick, compact = false }) {
+export default function MonthCalendar({
+  workoutCheckIns = [],
+  dietCheckIns = [],
+  onDayClick,
+  compact = false,
+  showWorkout = true,
+  showDiet = true,
+}) {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
@@ -52,8 +59,8 @@ export default function MonthCalendar({ workoutCheckIns = [], dietCheckIns = [],
           if (!d) return <div key={`e${i}`} className="cal-cell cal-cell--empty" />;
           const key = dk(d);
           const isToday = key === todayStr;
-          const hasW = workoutSet.has(key);
-          const hasD = dietSet.has(key);
+          const hasW = showWorkout && workoutSet.has(key);
+          const hasD = showDiet && dietSet.has(key);
           return (
             <div
               key={key}
@@ -72,14 +79,20 @@ export default function MonthCalendar({ workoutCheckIns = [], dietCheckIns = [],
         })}
       </div>
 
-      <div className="cal-legend">
-        <span className="cal-legend-item">
-          <span className="cal-dot cal-dot--workout" />Workout
-        </span>
-        <span className="cal-legend-item">
-          <span className="cal-dot cal-dot--diet" />Diet
-        </span>
-      </div>
+      {(showWorkout || showDiet) && (
+        <div className="cal-legend">
+          {showWorkout && (
+            <span className="cal-legend-item">
+              <span className="cal-dot cal-dot--workout" />Workout
+            </span>
+          )}
+          {showDiet && (
+            <span className="cal-legend-item">
+              <span className="cal-dot cal-dot--diet" />Diet
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
 }

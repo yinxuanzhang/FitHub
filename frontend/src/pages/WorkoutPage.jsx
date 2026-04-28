@@ -13,6 +13,8 @@ const MUSCLE_GROUPS = [
   { value: 'rest',       label: 'Rest' },
 ];
 
+const TRAINING_GROUPS = MUSCLE_GROUPS.filter(g => g.value !== 'rest');
+
 const MUSCLE_COLORS = {
   chest:      '#e8724a',
   shoulders:  '#7b6cf0',
@@ -25,74 +27,198 @@ const MUSCLE_COLORS = {
 
 const MUSCLE_LABEL = Object.fromEntries(MUSCLE_GROUPS.map(g => [g.value, g.label]));
 
-const WEEK_ORDER = [
-  { dow: 1, label: 'Mon' },
-  { dow: 2, label: 'Tue' },
-  { dow: 3, label: 'Wed' },
-  { dow: 4, label: 'Thu' },
-  { dow: 5, label: 'Fri' },
-  { dow: 6, label: 'Sat' },
-  { dow: 0, label: 'Sun' },
-];
-
 const TABS = [
-  { id: 'plan',  label: 'Weekly Plan' },
+  { id: 'plan',  label: 'Exercises' },
   { id: 'today', label: 'Today' },
 ];
-
-const EMPTY_DAY = { muscleGroups: [], exercisesByGroup: {} };
 
 function todayKey() { return new Date().toISOString().slice(0, 10); }
 
 // ── Shared small components ───────────────────────────────────────────
-function ExerciseRow({ ex, onRemove }) {
-  return (
-    <div className="exercise-row">
-      <div className="exercise-row-body">
-        <span className="exercise-row-name">{ex.name}</span>
-        <div className="exercise-row-stats">
-          <span className="exercise-row-stat">
-            <strong>{ex.sets}</strong>
-            <span className="exercise-row-unit">sets</span>
-          </span>
-          <span className="exercise-row-sep">×</span>
-          <span className="exercise-row-stat">
-            <strong>{ex.reps}</strong>
-            <span className="exercise-row-unit">reps</span>
-          </span>
-          <span className="exercise-row-sep">·</span>
-          <span className="exercise-row-stat">
-            <strong>{ex.weight}</strong>
-            <span className="exercise-row-unit">{ex.unit}</span>
-          </span>
-        </div>
-      </div>
-      {onRemove && (
-        <button type="button" className="exercise-delete-btn" onClick={() => onRemove(ex.id)}>×</button>
-      )}
-    </div>
-  );
-}
-
-function AddExerciseForm({ onAdd }) {
-  const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ name: '', sets: '', reps: '', weight: '' });
-  const [unit, setUnit] = useState('kg');
+function ExerciseForm({
+  initialExercise,
+  variant = 'strength',
+  onSubmit,
+  onCancel,
+  submitLabel = 'Add',
+  className = 'inline-exercise-form',
+}) {
+  const [form, setForm] = useState(() => ({
+    name: initialExercise?.name || '',
+    sets: initialExercise?.sets?.toString() || '',
+    reps: initialExercise?.reps?.toString() || '',
+    weight: initialExercise?.weight?.toString() || '',
+    duration: initialExercise?.duration?.toString() || '',
+    intensity: initialExercise?.intensity || '',
+  }));
+  const [unit, setUnit] = useState(initialExercise?.unit || 'kg');
+  const isCardio = variant === 'cardio';
 
   function handleSubmit(e) {
     e.preventDefault();
     if (!form.name.trim()) return;
-    onAdd({
-      id: Date.now().toString(),
+    const baseExercise = {
+      id: initialExercise?.id || Date.now().toString(),
       name: form.name.trim(),
+    };
+    onSubmit(isCardio ? {
+      ...baseExercise,
+      duration: parseInt(form.duration) || 0,
+      intensity: form.intensity.trim(),
+    } : {
+      ...baseExercise,
       sets: parseInt(form.sets) || 0,
       reps: parseInt(form.reps) || 0,
       weight: parseFloat(form.weight) || 0,
       unit,
     });
-    setForm({ name: '', sets: '', reps: '', weight: '' });
-    setOpen(false);
   }
+
+  return (
+    <form className={className} onSubmit={handleSubmit}>
+      <input
+        className="iex-name"
+        type="text"
+        placeholder="Exercise name"
+        value={form.name}
+        onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+        autoFocus
+      />
+      {isCardio ? (
+        <>
+          <input
+            className="iex-num"
+            type="number"
+            placeholder="Minutes"
+            min="0"
+            value={form.duration}
+            onChange={e => setForm(f => ({ ...f, duration: e.target.value }))}
+          />
+          <input
+            className="iex-intensity"
+            type="text"
+            placeholder="Intensity"
+            value={form.intensity}
+            onChange={e => setForm(f => ({ ...f, intensity: e.target.value }))}
+          />
+        </>
+      ) : (
+        <>
+          <input
+            className="iex-num"
+            type="number"
+            placeholder="Sets"
+            min="0"
+            value={form.sets}
+            onChange={e => setForm(f => ({ ...f, sets: e.target.value }))}
+          />
+          <input
+            className="iex-num"
+            type="number"
+            placeholder="Reps"
+            min="0"
+            value={form.reps}
+            onChange={e => setForm(f => ({ ...f, reps: e.target.value }))}
+          />
+          <input
+            className="iex-num"
+            type="number"
+            placeholder="Weight"
+            min="0"
+            step="0.5"
+            value={form.weight}
+            onChange={e => setForm(f => ({ ...f, weight: e.target.value }))}
+          />
+          <div className="unit-toggle">
+            <button type="button" className={`unit-btn${unit === 'kg' ? ' unit-btn--active' : ''}`} onClick={() => setUnit('kg')}>kg</button>
+            <button type="button" className={`unit-btn${unit === 'lbs' ? ' unit-btn--active' : ''}`} onClick={() => setUnit('lbs')}>lbs</button>
+          </div>
+        </>
+      )}
+      <button type="submit">{submitLabel}</button>
+      {onCancel && (
+        <button type="button" className="ghost-btn" onClick={onCancel}>Cancel</button>
+      )}
+    </form>
+  );
+}
+
+function ExerciseRow({ ex, onRemove, onUpdate, variant = 'strength' }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const isCardio = variant === 'cardio';
+
+  if (isEditing) {
+    return (
+      <ExerciseForm
+        initialExercise={ex}
+        variant={variant}
+        submitLabel="Save"
+        className="inline-exercise-form exercise-edit-form"
+        onSubmit={updated => {
+          onUpdate(updated);
+          setIsEditing(false);
+        }}
+        onCancel={() => setIsEditing(false)}
+      />
+    );
+  }
+
+  return (
+    <div className="exercise-row">
+      <div className="exercise-row-body">
+        <span className="exercise-row-name">{ex.name}</span>
+        <div className="exercise-row-stats">
+          {isCardio ? (
+            <>
+              <span className="exercise-row-stat">
+                <strong>{ex.duration || 0}</strong>
+                <span className="exercise-row-unit">min</span>
+              </span>
+              {ex.intensity && (
+                <>
+                  <span className="exercise-row-sep">·</span>
+                  <span className="exercise-row-stat">
+                    <strong>{ex.intensity}</strong>
+                  </span>
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              <span className="exercise-row-stat">
+                <strong>{ex.sets}</strong>
+                <span className="exercise-row-unit">sets</span>
+              </span>
+              <span className="exercise-row-sep">×</span>
+              <span className="exercise-row-stat">
+                <strong>{ex.reps}</strong>
+                <span className="exercise-row-unit">reps</span>
+              </span>
+              <span className="exercise-row-sep">·</span>
+              <span className="exercise-row-stat">
+                <strong>{ex.weight}</strong>
+                <span className="exercise-row-unit">{ex.unit}</span>
+              </span>
+            </>
+          )}
+        </div>
+      </div>
+      {(onUpdate || onRemove) && (
+        <div className="exercise-row-actions">
+          {onUpdate && (
+            <button type="button" className="exercise-edit-btn" onClick={() => setIsEditing(true)}>Edit</button>
+          )}
+          {onRemove && (
+            <button type="button" className="exercise-delete-btn" onClick={() => onRemove(ex.id)}>×</button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AddExerciseForm({ onAdd, variant = 'strength' }) {
+  const [open, setOpen] = useState(false);
 
   if (!open) {
     return (
@@ -107,78 +233,47 @@ function AddExerciseForm({ onAdd }) {
   }
 
   return (
-    <form className="inline-exercise-form" onSubmit={handleSubmit}>
-      <input
-        className="iex-name"
-        type="text"
-        placeholder="Exercise name"
-        value={form.name}
-        onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-        autoFocus
-      />
-      <input
-        className="iex-num"
-        type="number"
-        placeholder="Sets"
-        min="0"
-        value={form.sets}
-        onChange={e => setForm(f => ({ ...f, sets: e.target.value }))}
-      />
-      <input
-        className="iex-num"
-        type="number"
-        placeholder="Reps"
-        min="0"
-        value={form.reps}
-        onChange={e => setForm(f => ({ ...f, reps: e.target.value }))}
-      />
-      <input
-        className="iex-num"
-        type="number"
-        placeholder="Weight"
-        min="0"
-        step="0.5"
-        value={form.weight}
-        onChange={e => setForm(f => ({ ...f, weight: e.target.value }))}
-      />
-      <div className="unit-toggle">
-        <button type="button" className={`unit-btn${unit === 'kg' ? ' unit-btn--active' : ''}`} onClick={() => setUnit('kg')}>kg</button>
-        <button type="button" className={`unit-btn${unit === 'lbs' ? ' unit-btn--active' : ''}`} onClick={() => setUnit('lbs')}>lbs</button>
-      </div>
-      <button type="submit">Add</button>
-      <button type="button" className="ghost-btn" onClick={() => setOpen(false)}>Cancel</button>
-    </form>
+    <ExerciseForm
+      submitLabel="Add"
+      variant={variant}
+      onSubmit={ex => {
+        onAdd(ex);
+        setOpen(false);
+      }}
+      onCancel={() => setOpen(false)}
+    />
   );
 }
 
 // ── Main page ─────────────────────────────────────────────────────────
 export default function WorkoutPage() {
   const {
-    workoutPlan, setWorkoutPlan,
-    workoutExtraLogs, setWorkoutExtraLogs,
+    workoutPlan,
+    workoutRoutines, setWorkoutRoutines,
+    workoutDailyFocus, setWorkoutDailyFocus,
     workoutCheckIns, setWorkoutCheckIns,
   } = useAppData();
 
   const [tab, setTab] = useState('plan');
-  const [selectedPlanDay, setSelectedPlanDay] = useState(() => new Date().getDay());
-  const [editingDay, setEditingDay] = useState(null); // null = edit panel closed
-
-  function openEditDay(dow) {
-    setSelectedPlanDay(dow);
-    setEditingDay(prev => (prev === dow ? null : dow));
-  }
 
   const today = todayKey();
   const todayDow = new Date().getDay();
-  const todayPlan = workoutPlan[todayDow] || EMPTY_DAY;
-  const todayExtra = workoutExtraLogs[today] || [];
   const isCheckedIn = workoutCheckIns.includes(today);
 
-  // dayPlan is used by toggleMuscleGroup / add / remove helpers (keyed on selectedPlanDay)
-  const dayPlan = workoutPlan[selectedPlanDay] || EMPTY_DAY;
+  function legacyExercisesForGroup(group) {
+    return Object.values(workoutPlan).flatMap(d => d.exercisesByGroup?.[group] || []);
+  }
 
-  function toggleMuscleGroup(group) {
-    const current = dayPlan.muscleGroups || [];
+  function getRoutineExercises(group) {
+    const saved = workoutRoutines?.[group] || [];
+    return saved.length > 0 ? saved : legacyExercisesForGroup(group);
+  }
+
+  const legacyTodayFocus = workoutPlan[todayDow]?.muscleGroups || [];
+  const todayFocus = workoutDailyFocus[today] || legacyTodayFocus;
+
+  function toggleTodayFocus(group) {
+    const current = todayFocus || [];
 
     let nextGroups;
     if (group === 'rest') {
@@ -192,56 +287,32 @@ export default function WorkoutPage() {
       if (nextGroups.length === 0) nextGroups = ['rest'];
     }
 
-    setWorkoutPlan(prev => ({
+    setWorkoutDailyFocus(prev => ({
       ...prev,
-      [selectedPlanDay]: {
-        muscleGroups: nextGroups,
-        exercisesByGroup: prev[selectedPlanDay]?.exercisesByGroup || {},
-      },
+      [today]: nextGroups,
     }));
   }
 
-  function addExerciseToGroup(group, ex) {
-    setWorkoutPlan(prev => {
-      const d = prev[selectedPlanDay] || EMPTY_DAY;
-      return {
-        ...prev,
-        [selectedPlanDay]: {
-          ...d,
-          exercisesByGroup: {
-            ...d.exercisesByGroup,
-            [group]: [...(d.exercisesByGroup[group] || []), ex],
-          },
-        },
-      };
-    });
-  }
-
-  function removeExerciseFromGroup(group, id) {
-    setWorkoutPlan(prev => {
-      const d = prev[selectedPlanDay] || EMPTY_DAY;
-      return {
-        ...prev,
-        [selectedPlanDay]: {
-          ...d,
-          exercisesByGroup: {
-            ...d.exercisesByGroup,
-            [group]: (d.exercisesByGroup[group] || []).filter(e => e.id !== id),
-          },
-        },
-      };
-    });
-  }
-
-  // ── Today tab ──────────────────────────────────────────────────────
-  function addTodayExtra(ex) {
-    setWorkoutExtraLogs(prev => ({ ...prev, [today]: [...(prev[today] || []), ex] }));
-  }
-
-  function removeTodayExtra(id) {
-    setWorkoutExtraLogs(prev => ({
+  function addExerciseToRoutine(group, ex) {
+    setWorkoutRoutines(prev => ({
       ...prev,
-      [today]: (prev[today] || []).filter(e => e.id !== id),
+      [group]: [...getRoutineExercises(group), ex],
+    }));
+  }
+
+  function removeExerciseFromRoutine(group, id) {
+    setWorkoutRoutines(prev => ({
+      ...prev,
+      [group]: getRoutineExercises(group).filter(e => e.id !== id),
+    }));
+  }
+
+  function updateExerciseInRoutine(group, updatedExercise) {
+    setWorkoutRoutines(prev => ({
+      ...prev,
+      [group]: getRoutineExercises(group).map(ex =>
+        ex.id === updatedExercise.id ? updatedExercise : ex
+      ),
     }));
   }
 
@@ -249,148 +320,64 @@ export default function WorkoutPage() {
     if (!isCheckedIn) setWorkoutCheckIns(prev => [...prev, today]);
   }
 
-  const todayIsRest = todayPlan.muscleGroups.includes('rest') || todayPlan.muscleGroups.length === 0;
-  const todayActiveGroups = todayIsRest ? [] : todayPlan.muscleGroups;
+  const todayIsRest = todayFocus.includes('rest') || todayFocus.length === 0;
+  const todayActiveGroups = todayIsRest ? [] : todayFocus;
 
   return (
-    <>
+    <div className="workout-page">
       <PageHeader title="Workout" subtitle="Plan and track your training" />
+
       <TabBar tabs={TABS} active={tab} onChange={setTab} />
 
       {/* ── PLAN TAB ── */}
       {tab === 'plan' && (
-        <div className="week-plan-list">
-          {WEEK_ORDER.map(({ dow, label }) => {
-            const d = workoutPlan[dow] || EMPTY_DAY;
-            const groups = (d.muscleGroups || []).filter(g => g !== 'rest');
-            const isRest = d.muscleGroups.includes('rest') || d.muscleGroups.length === 0;
-            const isEditing = editingDay === dow;
+        <div className="workout-builder">
+          <div className="workout-builder-head">
+            <div>
+              <h3 className="card-section-title">Training Library</h3>
+              <p className="workout-builder-subtitle">All body parts and exercises in one list.</p>
+            </div>
+          </div>
 
-            // For edit panel, use selectedPlanDay data
-            const ep = workoutPlan[dow] || EMPTY_DAY;
-            const epIsRest = ep.muscleGroups.includes('rest') || ep.muscleGroups.length === 0;
-            const epGroups = epIsRest ? [] : ep.muscleGroups;
-
-            return (
-              <div key={dow}>
-                {/* ── Day overview card ── */}
-                <article className={`card week-plan-day-card${isEditing ? ' week-plan-day-card--active' : ''}`}>
-                  <div className="week-plan-day-header">
-                    <div className="week-plan-day-left">
-                      <span className="week-plan-day-name">{label}</span>
-                      <div className="week-plan-day-tags">
-                        {isRest
-                          ? <span className="week-plan-rest-tag">Rest Day</span>
-                          : groups.map(g => (
-                            <span key={g} className="week-plan-group-pill"
-                              style={{ background: MUSCLE_COLORS[g] + '20', color: MUSCLE_COLORS[g], borderColor: MUSCLE_COLORS[g] + '55' }}>
-                              {MUSCLE_LABEL[g]}
-                            </span>
-                          ))
-                        }
-                      </div>
+          <div className="routine-list">
+            {TRAINING_GROUPS.map(({ value, label }) => {
+              const exercises = getRoutineExercises(value);
+              return (
+                <article key={value} className="card routine-section">
+                  <div className="routine-section-header">
+                    <div className="exercise-group-header">
+                      <span className="exercise-group-dot" style={{ background: MUSCLE_COLORS[value] }} />
+                      <span style={{ color: MUSCLE_COLORS[value], fontWeight: 700 }}>
+                        {label}
+                      </span>
+                      <span className="exercise-group-count">
+                        {exercises.length} exercises
+                      </span>
                     </div>
-                    <button
-                      type="button"
-                      className={`week-plan-edit-btn${isEditing ? ' week-plan-edit-btn--active' : ''}`}
-                      onClick={() => openEditDay(dow)}
-                    >
-                      {isEditing ? 'Done' : 'Edit'}
-                    </button>
                   </div>
 
-                  {/* Exercises per group */}
-                  {!isRest && groups.map(g => {
-                    const exs = d.exercisesByGroup?.[g] || [];
-                    if (exs.length === 0) return null;
-                    return (
-                      <div key={g} className="week-plan-group-block">
-                        <p className="week-plan-group-label" style={{ color: MUSCLE_COLORS[g] }}>
-                          {MUSCLE_LABEL[g]}
-                        </p>
-                        <div className="week-plan-ex-table">
-                          {exs.map(ex => (
-                            <div key={ex.id} className="week-plan-ex-item">
-                              <span className="week-plan-ex-name">{ex.name}</span>
-                              <div className="week-plan-ex-stats">
-                                <div className="week-plan-stat-box">
-                                  <span className="week-plan-stat-num">{ex.sets}</span>
-                                  <span className="week-plan-stat-label">sets</span>
-                                </div>
-                                <span className="week-plan-stat-sep">×</span>
-                                <div className="week-plan-stat-box">
-                                  <span className="week-plan-stat-num">{ex.reps}</span>
-                                  <span className="week-plan-stat-label">reps</span>
-                                </div>
-                                <span className="week-plan-stat-sep">·</span>
-                                <div className="week-plan-stat-box">
-                                  <span className="week-plan-stat-num">{ex.weight}</span>
-                                  <span className="week-plan-stat-label">{ex.unit}</span>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {exercises.map(ex => (
+                    <ExerciseRow
+                      key={ex.id}
+                      ex={ex}
+                      variant={value === 'cardio' ? 'cardio' : 'strength'}
+                      onRemove={id => removeExerciseFromRoutine(value, id)}
+                      onUpdate={updated => updateExerciseInRoutine(value, updated)}
+                    />
+                  ))}
 
-                  {!isRest && groups.every(g => (d.exercisesByGroup?.[g] || []).length === 0) && (
-                    <p className="week-plan-no-ex">No exercises added. Click Edit to set up.</p>
+                  {exercises.length === 0 && (
+                    <p className="week-plan-no-ex">No exercises yet.</p>
                   )}
+
+                  <AddExerciseForm
+                    variant={value === 'cardio' ? 'cardio' : 'strength'}
+                    onAdd={ex => addExerciseToRoutine(value, ex)}
+                  />
                 </article>
-
-                {/* ── Edit panel (inline, only for this day) ── */}
-                {isEditing && (
-                  <article className="card week-plan-edit-panel">
-                    <p className="card-label" style={{ marginBottom: '0.625rem' }}>Muscle Groups</p>
-                    <div className="muscle-group-grid" style={{ marginBottom: '1.25rem' }}>
-                      {MUSCLE_GROUPS.map(({ value, label: ml }) => {
-                        const active = (ep.muscleGroups || []).includes(value);
-                        return (
-                          <button
-                            key={value}
-                            type="button"
-                            className={`muscle-tag-btn${active ? ' muscle-tag-btn--active' : ''}`}
-                            style={active ? {
-                              background: MUSCLE_COLORS[value] + '22',
-                              color: MUSCLE_COLORS[value],
-                              borderColor: MUSCLE_COLORS[value] + '66',
-                            } : {}}
-                            onClick={() => toggleMuscleGroup(value)}
-                          >
-                            {ml}
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {epIsRest && (
-                      <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-                        Rest day — no exercises needed.
-                      </p>
-                    )}
-
-                    {!epIsRest && epGroups.map(group => (
-                      <div key={group} className="exercise-group-section">
-                        <div className="exercise-group-header">
-                          <span className="exercise-group-dot" style={{ background: MUSCLE_COLORS[group] }} />
-                          <span style={{ color: MUSCLE_COLORS[group], fontWeight: 700 }}>{MUSCLE_LABEL[group]}</span>
-                          <span className="exercise-group-count">
-                            {(ep.exercisesByGroup?.[group] || []).length} exercises
-                          </span>
-                        </div>
-                        {(ep.exercisesByGroup?.[group] || []).map(ex => (
-                          <ExerciseRow key={ex.id} ex={ex} onRemove={id => removeExerciseFromGroup(group, id)} />
-                        ))}
-                        <AddExerciseForm onAdd={ex => addExerciseToGroup(group, ex)} />
-                      </div>
-                    ))}
-                  </article>
-                )}
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       )}
 
@@ -419,12 +406,36 @@ export default function WorkoutPage() {
             {isCheckedIn && <div className="checkin-done">✓ Logged</div>}
           </div>
 
+          <article className="card today-focus-card">
+            <h3 className="card-section-title" style={{ marginBottom: '0.875rem' }}>Choose Today</h3>
+            <div className="workout-focus-picker">
+              {MUSCLE_GROUPS.map(({ value, label }) => {
+                const active = todayFocus.includes(value);
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    className={`muscle-tag-btn${active ? ' muscle-tag-btn--active' : ''}`}
+                    style={active ? {
+                      background: MUSCLE_COLORS[value] + '22',
+                      color: MUSCLE_COLORS[value],
+                      borderColor: MUSCLE_COLORS[value] + '66',
+                    } : {}}
+                    onClick={() => toggleTodayFocus(value)}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </article>
+
           {/* Plan exercises grouped by muscle group */}
           {!todayIsRest && todayActiveGroups.length > 0 && (
             <article className="card">
               <h3 className="card-section-title" style={{ marginBottom: '1rem' }}>Today&apos;s Plan</h3>
               {todayActiveGroups.map(group => {
-                const exList = todayPlan.exercisesByGroup?.[group] || [];
+                const exList = getRoutineExercises(group);
                 return (
                   <div key={group} className="exercise-group-section">
                     <div className="exercise-group-header">
@@ -432,7 +443,14 @@ export default function WorkoutPage() {
                       <span style={{ color: MUSCLE_COLORS[group], fontWeight: 700 }}>{MUSCLE_LABEL[group]}</span>
                     </div>
                     {exList.length > 0
-                      ? exList.map(ex => <ExerciseRow key={ex.id} ex={ex} onRemove={null} />)
+                      ? exList.map(ex => (
+                        <ExerciseRow
+                          key={ex.id}
+                          ex={ex}
+                          variant={group === 'cardio' ? 'cardio' : 'strength'}
+                          onRemove={null}
+                        />
+                      ))
                       : <p style={{ fontSize: '0.8rem', color: 'var(--text-subtle)', padding: '0.25rem 0 0.5rem' }}>No exercises set in plan.</p>
                     }
                   </div>
@@ -441,16 +459,7 @@ export default function WorkoutPage() {
             </article>
           )}
 
-          {/* Extra exercises for today */}
           <article className="card">
-            <h3 className="card-section-title" style={{ marginBottom: '0.875rem' }}>
-              {todayExtra.length > 0 ? 'Extra Exercises' : 'Add Extra Exercise'}
-            </h3>
-            {todayExtra.map(ex => (
-              <ExerciseRow key={ex.id} ex={ex} onRemove={removeTodayExtra} />
-            ))}
-            <AddExerciseForm onAdd={addTodayExtra} />
-
             <button
               type="button"
               className={`complete-btn${isCheckedIn ? ' complete-btn--done' : ''}`}
@@ -464,6 +473,6 @@ export default function WorkoutPage() {
         </>
       )}
 
-    </>
+    </div>
   );
 }
