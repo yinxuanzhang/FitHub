@@ -1,11 +1,10 @@
-export default function PageHeader({ title, subtitle, actions, gradient = false }) {
+export default function PageHeader({ eyebrow, title, description, actions }) {
   return (
     <header className="page-header">
       <div>
-        <h1>
-          {gradient ? <span className="gradient-text">{title}</span> : title}
-        </h1>
-        {subtitle && <p>{subtitle}</p>}
+        {eyebrow && <span className="eyebrow">{eyebrow}</span>}
+        <h1>{title}</h1>
+        {description && <p>{description}</p>}
       </div>
       {actions && <div className="header-actions">{actions}</div>}
     </header>

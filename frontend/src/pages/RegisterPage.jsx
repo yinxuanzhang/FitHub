@@ -1,38 +1,48 @@
-import { Link } from 'react-router-dom';
+import { useState } from "react";
+import { Link, Navigate, useNavigate } from "react-router-dom";
+import PageHeader from "../components/PageHeader.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
 
-export default function RegisterPage({ onRegister }) {
-  const handleSubmit = (event) => {
+export default function RegisterPage() {
+  const navigate = useNavigate();
+  const { isAuthenticated, register } = useAuth();
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [error, setError] = useState("");
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  function handleSubmit(event) {
     event.preventDefault();
-    onRegister();
-  };
+    const result = register(form);
+    if (!result.ok) {
+      setError(result.message);
+      return;
+    }
+    navigate("/dashboard", { replace: true });
+  }
 
   return (
-    <div className="auth-card">
-      <h2>Create account</h2>
-      <p>Start tracking workouts, meals, and streaks today.</p>
-
-      <form className="auth-form" onSubmit={handleSubmit}>
+    <div className="page-stack auth-page">
+      <PageHeader eyebrow="Create account" title="Register" description="Create a user-owned fitness data workspace." />
+      <form className="form-card auth-card" onSubmit={handleSubmit}>
+        {error && <p className="form-error">{error}</p>}
+        <label>
+          Name
+          <input value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} required />
+        </label>
         <label>
           Email
-          <input type="email" placeholder="you@example.com" required />
+          <input type="email" value={form.email} onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))} required />
         </label>
         <label>
           Password
-          <input type="password" placeholder="Create a strong password" required />
+          <input type="password" value={form.password} onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))} required />
         </label>
-        <label>
-          Confirm password
-          <input type="password" placeholder="Confirm password" required />
-        </label>
-        <button type="submit" style={{ marginTop: '0.5rem' }}>
-          Get Started →
-        </button>
+        <button className="button primary" type="submit">Create account</button>
+        <p className="muted-copy">Already registered? <Link className="inline-link" to="/login">Login</Link></p>
       </form>
-
-      <p className="switch-auth">
-        Already have an account?&nbsp;
-        <Link to="/login">Sign in</Link>
-      </p>
     </div>
   );
 }
