@@ -38,6 +38,9 @@ export function AuthProvider({ children }) {
       avatarUrl: "",
       bio: "",
       createdAt: new Date().toISOString().slice(0, 10),
+      sex: "",
+      birthDate: "",
+      activityLevel: "moderate",
       privacy: {
         showLatestBodyRecord: false
       }

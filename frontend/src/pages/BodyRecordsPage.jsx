@@ -2,11 +2,18 @@ import { useState } from "react";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import ChartCard from "../components/ChartCard.jsx";
 import PageHeader from "../components/PageHeader.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
 import { useFitnessData } from "../context/FitnessDataContext.jsx";
-import { formatDate } from "../utils/fitness.js";
+import { estimateTDEE, formatDate } from "../utils/fitness.js";
 
 export default function BodyRecordsPage() {
+  const { currentUser } = useAuth();
   const { bodyRecords: records, dietPlans, addBodyRecord } = useFitnessData();
+  const userProfile = {
+    birthDate: currentUser?.birthDate,
+    sex: currentUser?.sex,
+    activityLevel: currentUser?.activityLevel ?? "moderate",
+  };
 
   const [form, setForm] = useState(() => {
     const latest = [...records].sort((a, b) => new Date(b.date) - new Date(a.date))[0];
@@ -52,9 +59,7 @@ export default function BodyRecordsPage() {
   const latestRecord = sortedRecords[sortedRecords.length - 1] ?? null;
 
   const progress = computeProgress(sortedRecords);
-  const dietPhaseInfo = progress ? determineDietPhase(dietPlans, progress.latest) : null;
-  const phase = dietPhaseInfo?.phase ?? null;
-
+  const dietPhaseInfo = progress ? determineDietPhase(dietPlans, progress.latest, userProfile) : null;
   return (
     <div className="page-stack">
       <PageHeader
@@ -114,13 +119,6 @@ export default function BodyRecordsPage() {
             <ChangeCard label="Body fat" delta={progress.bodyFatDelta} unit="%" />
             {progress.waistDelta !== null && <ChangeCard label="Waist" delta={progress.waistDelta} unit="in" />}
             {progress.chestDelta !== null && <ChangeCard label="Chest" delta={progress.chestDelta} unit="in" />}
-          </div>
-          <div className="insight-card">
-            <InsightIcon />
-            <div>
-              <span className="eyebrow">Insight{phase ? ` · ${phase}` : ""}</span>
-              <p>{getPhaseInsight(phase, progress)}</p>
-            </div>
           </div>
           {dietPhaseInfo && (
             <p className="disclaimer-copy">
@@ -238,9 +236,14 @@ function computeProgress(sortedRecords) {
   };
 }
 
-function determineDietPhase(dietPlans, latestRecord) {
+function determineDietPhase(dietPlans, latestRecord, userProfile = {}) {
   if (!dietPlans.length || !latestRecord?.weight) return null;
-  const tdee = Math.round(latestRecord.weight * 15);
+  const tdee = estimateTDEE({
+    weight: latestRecord.weight,
+    height: latestRecord.height,
+    ...userProfile,
+  });
+  if (!tdee) return null;
   const calories = dietPlans[0].calories;
   let phase;
   if (calories < tdee - 200) phase = "Cutting";
@@ -249,32 +252,6 @@ function determineDietPhase(dietPlans, latestRecord) {
   return { phase, tdee, calories };
 }
 
-function getPhaseInsight(phase, { bodyFatDelta, waistDelta, weightDelta, chestDelta }) {
-  const bfDown = bodyFatDelta < -0.3;
-  const waistDown = waistDelta !== null && waistDelta < -0.3;
-  const weightUp = weightDelta > 0.5;
-  const chestUp = chestDelta !== null && chestDelta > 0.1;
-  const bfNotHigher = bodyFatDelta <= 0.5;
-
-  if (phase === "Cutting") {
-    return (bfDown && waistDown)
-      ? "Fat loss is progressing well."
-      : "Fat loss is slower than expected.";
-  }
-  if (phase === "Bulking") {
-    return (weightUp && chestUp && bfNotHigher)
-      ? "Muscle gain is progressing well."
-      : "Fat gain may be too high.";
-  }
-  if (phase === "Maintenance") {
-    return (bfDown && waistDown)
-      ? "Body recomposition is progressing well."
-      : "No significant progress detected.";
-  }
-  // No diet plan — fall back to generic
-  if (bfDown && waistDown) return "You are trending leaner.";
-  return "Add a diet plan to get phase-specific insights.";
-}
 
 function PhaseBadge({ phase }) {
   const cls = phase === "Cutting" ? "cutting" : phase === "Bulking" ? "bulking" : "maintenance";

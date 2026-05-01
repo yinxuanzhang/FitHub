@@ -7,6 +7,9 @@ export const users = [
     avatarUrl: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=240&q=80",
     bio: "Building a long-term strength and body composition system.",
     createdAt: "2026-01-12",
+    sex: "male",
+    birthDate: "1996-03-15",
+    activityLevel: "moderate",
     privacy: {
       showLatestBodyRecord: true
     }
@@ -19,6 +22,9 @@ export const users = [
     avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=240&q=80",
     bio: "Hypertrophy-focused lifter keeping training simple and repeatable.",
     createdAt: "2026-02-03",
+    sex: "female",
+    birthDate: "1999-07-20",
+    activityLevel: "moderate",
     privacy: {
       showLatestBodyRecord: false
     }
