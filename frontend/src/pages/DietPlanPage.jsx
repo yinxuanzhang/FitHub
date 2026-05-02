@@ -17,18 +17,22 @@ export default function DietPlanPage() {
   const [tdeeForm, setTdeeForm] = useState({
     sex: currentUser?.sex || "",
     birthDate: currentUser?.birthDate || "",
+    height: currentUser?.height?.toString() || "",
     activityLevel: currentUser?.activityLevel || "moderate",
   });
 
   function handleTdeeSubmit(event) {
     event.preventDefault();
-    updateProfile(tdeeForm);
+    updateProfile({
+      ...tdeeForm,
+      height: tdeeForm.height ? Number(tdeeForm.height) : undefined,
+    });
   }
   const currentPlan = plans[0];
   const latestRecord = [...bodyRecords].sort((a, b) => new Date(b.date) - new Date(a.date))[0] ?? null;
   const tdeeProfile = {
     weight: latestRecord?.weight,
-    height: latestRecord?.height,
+    height: currentUser?.height,
     birthDate: currentUser?.birthDate,
     sex: currentUser?.sex,
     activityLevel: currentUser?.activityLevel ?? "moderate",
@@ -96,6 +100,10 @@ export default function DietPlanPage() {
           <label>
             Date of birth
             <input type="date" value={tdeeForm.birthDate} onChange={(e) => setTdeeForm((c) => ({ ...c, birthDate: e.target.value }))} required />
+          </label>
+          <label>
+            Height <span className="field-optional">in</span>
+            <input inputMode="decimal" value={tdeeForm.height} onChange={(e) => setTdeeForm((c) => ({ ...c, height: e.target.value }))} placeholder="70" required />
           </label>
         </div>
         <label>

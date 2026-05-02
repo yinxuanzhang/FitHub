@@ -15,17 +15,13 @@ export default function BodyRecordsPage() {
     activityLevel: currentUser?.activityLevel ?? "moderate",
   };
 
-  const [form, setForm] = useState(() => {
-    const latest = [...records].sort((a, b) => new Date(b.date) - new Date(a.date))[0];
-    return {
-      date: new Date().toISOString().slice(0, 10),
-      height: latest?.height?.toString() || "",
-      weight: "",
-      bodyFat: "",
-      waist: "",
-      chest: "",
-      notes: ""
-    };
+  const [form, setForm] = useState({
+    date: new Date().toISOString().slice(0, 10),
+    weight: "",
+    bodyFat: "",
+    waist: "",
+    chest: "",
+    notes: ""
   });
 
   function updateField(field, value) {
@@ -37,15 +33,14 @@ export default function BodyRecordsPage() {
     if (!form.weight || !form.bodyFat) return;
     addBodyRecord({
       ...form,
-      height: form.height ? Number(form.height) : undefined,
       weight: Number(form.weight),
       bodyFat: Number(form.bodyFat),
       waist: form.waist ? Number(form.waist) : undefined,
       chest: form.chest ? Number(form.chest) : undefined,
     });
     setForm((current) => ({
+      ...current,
       date: new Date().toISOString().slice(0, 10),
-      height: current.height,
       weight: "",
       bodyFat: "",
       waist: "",
@@ -146,19 +141,15 @@ export default function BodyRecordsPage() {
           </label>
           <div className="form-grid">
             <label>
-              Height <span className="field-optional">in</span>
-              <input inputMode="decimal" value={form.height} onChange={(event) => updateField("height", event.target.value)} placeholder="70" />
-            </label>
-            <label>
               Body weight <span className="field-optional">lb</span>
               <input inputMode="decimal" value={form.weight} onChange={(event) => updateField("weight", event.target.value)} placeholder="179.8" />
             </label>
-          </div>
-          <div className="form-grid">
             <label>
               Body fat %
               <input inputMode="decimal" value={form.bodyFat} onChange={(event) => updateField("bodyFat", event.target.value)} placeholder="16.9" />
             </label>
+          </div>
+          <div className="form-grid">
             <label>
               Waist <span className="field-optional">optional · in</span>
               <input inputMode="decimal" value={form.waist} onChange={(event) => updateField("waist", event.target.value)} placeholder="32.5" />
