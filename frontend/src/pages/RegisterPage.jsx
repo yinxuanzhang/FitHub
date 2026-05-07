@@ -2,25 +2,30 @@ import { useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
-
+import axios from "axios";
 export default function RegisterPage() {
   const navigate = useNavigate();
   const { isAuthenticated, register } = useAuth();
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
-
+  async function registerUser(form) {
+   await axios.post("http://localhost:3000/api/register", form)
+  }
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    const result = register(form);
-    if (!result.ok) {
-      setError(result.message);
-      return;
+    
+    try{
+      await registerUser(form);
+      navigate("/dashboard", { replace: true });
     }
-    navigate("/dashboard", { replace: true });
+    
+    catch(err){
+      setError("Registration failed");
+    }
   }
 
   return (
@@ -40,7 +45,7 @@ export default function RegisterPage() {
           Password
           <input type="password" value={form.password} onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))} required />
         </label>
-        <button className="button primary" type="submit">Create account</button>
+        <button className="button primary" type="submit" >Create account</button>
         <p className="muted-copy">Already registered? <Link className="inline-link" to="/login">Login</Link></p>
       </form>
     </div>
