@@ -14,9 +14,9 @@ export default function LoginPage() {
     return <Navigate to="/dashboard" replace />;
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    const result = login(form.email, form.password);
+    const result = await login(form.email, form.password);
     if (!result.ok) {
       setError(result.message);
       return;

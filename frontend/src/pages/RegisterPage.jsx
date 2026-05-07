@@ -1,26 +1,23 @@
 import { useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader.jsx";
-import { useAuth } from "../context/AuthContext.jsx";
 import axios from "axios";
 export default function RegisterPage() {
   const navigate = useNavigate();
-  const { isAuthenticated, register } = useAuth();
+  
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
   async function registerUser(form) {
    await axios.post("http://localhost:3000/api/register", form)
   }
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
-  }
+ 
 
   async function handleSubmit(event) {
     event.preventDefault();
     
     try{
       await registerUser(form);
-      navigate("/dashboard", { replace: true });
+      navigate("/login", { replace: true });
     }
     
     catch(err){
