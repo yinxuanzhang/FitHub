@@ -1,56 +1,48 @@
 import { createContext, useContext, useMemo, useState } from "react";
 import axios from "axios";
+
 const AuthContext = createContext(null);
 
-function withoutPassword(user) {
-  if (!user) return null;
-  const { password, ...safeUser } = user;
-  return safeUser;
-}
-
 export function AuthProvider({ children }) {
-  const [users, setUsers] = useState(null);
-  const [currentUserId, setCurrentUserId] = useState(null);
-
- 
+  const [currentUser, setCurrentUser] = useState(null);
+  const users = currentUser ? [currentUser] : [];
 
   async function login(email, password) {
-    const response = await axios.post("http://localhost:3000/api/login", { email, password });
-    const id=response.data;
-    
-    if (!id) {
-      return { ok: false, message: "Invalid email or password." };
+    try {
+      const response = await axios.post("http://localhost:3000/api/login", { email, password });
+      setCurrentUser(response.data);
+      return { ok: true };
+    } catch (error) {
+      return {
+        ok: false,
+        message: error.response?.data?.message || "Invalid email or password."
+      };
     }
-    setCurrentUserId(id);
-    return { ok: true };
   }
-
-
 
   function logout() {
-    setCurrentUserId(null);
+    setCurrentUser(null);
   }
 
-  function updateProfile(profile) {
-    setUsers((current) => current.map((user) => (user.id === currentUserId ? { ...user, ...profile } : user)));
+  function updateProfile() {
+    // TODO: connect to backend profile update later
   }
 
   function getUserById(userId) {
-    return withoutPassword(users.find((user) => user.id === userId));
+    return users.find((user) => user.id === userId);
   }
 
   const value = useMemo(
     () => ({
-      users: users.map(withoutPassword),
+      users,
       currentUser,
       isAuthenticated: Boolean(currentUser),
       login,
-      register,
       logout,
       updateProfile,
       getUserById
     }),
-    [users, currentUserId]
+    [currentUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

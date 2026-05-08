@@ -7,7 +7,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, login } = useAuth();
-  const [form, setForm] = useState({ email: "alex@example.com", password: "password123" });
+  const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
 
   if (isAuthenticated) {
