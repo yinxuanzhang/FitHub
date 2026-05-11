@@ -10,7 +10,8 @@ export function AuthProvider({ children }) {
   async function login(email, password) {
     try {
       const response = await axios.post("http://localhost:3000/api/login", { email, password });
-      setCurrentUser(response.data);
+      setCurrentUser(response.data.user);
+      localStorage.setItem("token",response.data.token);
       return { ok: true };
     } catch (error) {
       return {
@@ -22,6 +23,7 @@ export function AuthProvider({ children }) {
 
   function logout() {
     setCurrentUser(null);
+    localStorage.removeItem("token");
   }
 
   function updateProfile() {

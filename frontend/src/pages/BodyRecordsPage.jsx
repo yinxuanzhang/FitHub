@@ -5,7 +5,7 @@ import PageHeader from "../components/PageHeader.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useFitnessData } from "../context/FitnessDataContext.jsx";
 import { estimateTDEE, formatDate } from "../utils/fitness.js";
-
+import axios from "axios";
 export default function BodyRecordsPage() {
   const { currentUser } = useAuth();
   const { bodyRecords: records, dietPlans, addBodyRecord } = useFitnessData();
@@ -28,7 +28,7 @@ export default function BodyRecordsPage() {
     setForm((current) => ({ ...current, [field]: value }));
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     if (!form.weight || !form.bodyFat) return;
     addBodyRecord({
@@ -37,6 +37,19 @@ export default function BodyRecordsPage() {
       bodyFat: Number(form.bodyFat),
       waist: form.waist ? Number(form.waist) : undefined,
       chest: form.chest ? Number(form.chest) : undefined,
+    });
+    const token=localStorage.getItem('token');
+    await axios.post("http://localhost:3000/api/body-records", {...form,
+      date: new Date().toISOString().slice(0, 10),
+      weight:Number(form.weight),
+      bodyFat:Number(form.bodyFat),
+      waist:form.waist ? Number(form.waist) : undefined,
+      chest:form.chest ? Number(form.chest) : undefined,
+      notes:form.notes ? form.notes : undefined
+    }, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
     });
     setForm((current) => ({
       ...current,
@@ -140,7 +153,7 @@ export default function BodyRecordsPage() {
             <input type="date" value={form.date} onChange={(event) => updateField("date", event.target.value)} />
           </label>
           <div className="form-grid">
-            <label>
+           <label>
               Body weight <span className="field-optional">lb</span>
               <input inputMode="decimal" value={form.weight} onChange={(event) => updateField("weight", event.target.value)} placeholder="179.8" />
             </label>
