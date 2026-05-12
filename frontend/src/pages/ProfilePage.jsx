@@ -7,7 +7,8 @@ export default function ProfilePage() {
   const { currentUser } = useAuth();
   const { program } = useProgram();
   const { getLatestBodyRecord, getPublicPosts } = useFitnessData();
-  const latestBodyRecord = currentUser.privacy?.showLatestBodyRecord ? getLatestBodyRecord(currentUser.id) : null;
+ 
+  const latestBodyRecord = getLatestBodyRecord(currentUser.id);
 
   return (
     <ProfileSummary

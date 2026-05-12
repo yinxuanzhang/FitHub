@@ -20,7 +20,7 @@ export default function PublicProfilePage() {
     );
   }
 
-  const latestBodyRecord = user.privacy?.showLatestBodyRecord ? getLatestBodyRecord(user.id) : null;
+  const latestBodyRecord = getLatestBodyRecord(user.id);
 
   return (
     <ProfileSummary

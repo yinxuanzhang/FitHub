@@ -9,10 +9,7 @@ export const users = [
     createdAt: "2026-01-12",
     sex: "male",
     birthDate: "1996-03-15",
-    activityLevel: "moderate",
-    privacy: {
-      showLatestBodyRecord: true
-    }
+    activityLevel: "moderate"
   },
   {
     id: "user-2",
@@ -24,10 +21,7 @@ export const users = [
     createdAt: "2026-02-03",
     sex: "female",
     birthDate: "1999-07-20",
-    activityLevel: "moderate",
-    privacy: {
-      showLatestBodyRecord: false
-    }
+    activityLevel: "moderate"
   }
 ];
 

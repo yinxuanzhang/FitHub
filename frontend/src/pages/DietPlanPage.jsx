@@ -21,11 +21,23 @@ export default function DietPlanPage() {
     activityLevel: currentUser?.activityLevel || "moderate",
   });
 
-  function handleTdeeSubmit(event) {
+  async function handleTdeeSubmit(event) {
     event.preventDefault();
     updateProfile({
       ...tdeeForm,
       height: tdeeForm.height ? Number(tdeeForm.height) : undefined,
+      
+    });
+      await axios.post('http://localhost:3000/api/user', {
+      
+      height: tdeeForm.height ? Number(tdeeForm.height) : undefined,
+      sex: tdeeForm.sex,
+      dateOfBirth: tdeeForm.birthDate,
+      activityLevel: tdeeForm.activityLevel,
+    }, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem("token")}`
+      }
     });
   }
   const currentPlan = plans[0];

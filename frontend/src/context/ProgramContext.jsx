@@ -12,6 +12,13 @@ export function ProgramProvider({ children }) {
   const { currentUser } = useAuth();
   const [programs, setPrograms] = useState(trainingPrograms);
   const userId = currentUser?.id;
+  async function fetchProgramFromBackend(userId) {
+   const response = await axios.get('http://localhost:3000/api/program', {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem("token")}`
+      }
+    });
+  }
   const program = programs.find((item) => item.userId === userId) || createEmptyProgram(userId);
 
   function createProgramVersion(nextSnapshot, changeSummary) {

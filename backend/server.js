@@ -52,7 +52,12 @@ app.post('/api/login',async(req,res)=>{
     }
     const token=jwt.sign({id:user.id},process.env.JWT_SECRET,{expiresIn:'7d'});
     res.status(200).json({token,
-      user:{id:user.id,email:user.email,name:user.name,createdAt:user.createdAt}});
+      user:{id:user.id,email:user.email,
+        name:user.name,createdAt:user.createdAt,
+        dateOfBirth:user.dateOfBirth,height:user.height,
+        activityLevel:user.activityLevel,sex:user.sex,
+        bio:user.bio,avatar:user.avatar
+      }});
   }catch(error){
     res.status(500).json({message:"Internal server error"});
   }
@@ -138,7 +143,65 @@ app.post('/api/diet-plans',authMiddleware,async(req,res)=>{
     res.status(500).json({message:"Internal server error"});
   }
 });
-     
+app.post('/api/user',authMiddleware,async(req,res)=>{
+  try{
+    const{height,activityLevel,sex,dateOfBirth}=req.body;
+    const updatedUser=await prisma.user.update({
+      where:{id:req.user.id},
+      data:{height,activityLevel,sex,dateOfBirth:new Date(dateOfBirth)},
+      select:{
+        id:true,
+        email:true,
+        name:true,
+        height:true,
+        activityLevel:true,
+        createdAt:true,
+        dateOfBirth:true,
+      }
+    });
+    res.status(200).json(updatedUser);
+  }catch(error){
+    res.status(500).json({message:"Internal server error"});
+  }
+});
+app.put('/api/user',authMiddleware,async(req,res)=>{
+  try{
+    const{name,avatarUrl,bio}=req.body;
+    const updatedUser=await prisma.user.update({
+      where:{id:req.user.id},
+      data:{name,avatar:avatarUrl,bio},
+      select:{
+        id:true,
+        email:true,
+        name:true,
+        height:true,
+        activityLevel:true,
+        createdAt:true,
+        dateOfBirth:true,
+        bio:true,
+        avatar:true,
+      }
+    });
+    res.status(200).json(updatedUser);
+  }catch(error){
+    res.status(500).json({message:"Internal server error"});
+  }
+});
+app.get('/api/program',authMiddleware,async(req,res)=>{
+  try{
+    const program=await prisma.program.findUnique({
+      where:{userId:req.user.id},
+      include:{versions:true}
+    });
+    if(!program){
+      res.status(404).json({message:"Program not found"});
+      return;
+    }
+    res.status(200).json(program);
+  }catch(error){
+    res.status(500).json({message:"Internal server error"});
+  }
+});
 app.listen(port,()=>{
   console.log(`server is running at ${port}`)
 });

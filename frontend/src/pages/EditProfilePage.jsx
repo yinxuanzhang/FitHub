@@ -9,8 +9,7 @@ export default function EditProfilePage() {
   const [form, setForm] = useState({
     name: currentUser.name,
     avatarUrl: currentUser.avatarUrl || "",
-    bio: currentUser.bio || "",
-    showLatestBodyRecord: Boolean(currentUser.privacy?.showLatestBodyRecord)
+    bio: currentUser.bio || ""
   });
 
   function handleSubmit(event) {
@@ -18,11 +17,7 @@ export default function EditProfilePage() {
     updateProfile({
       name: form.name,
       avatarUrl: form.avatarUrl,
-      bio: form.bio,
-      privacy: {
-        ...currentUser.privacy,
-        showLatestBodyRecord: form.showLatestBodyRecord
-      }
+      bio: form.bio
     });
     navigate("/profile");
   }
@@ -47,14 +42,6 @@ export default function EditProfilePage() {
         <label>
           Bio
           <textarea value={form.bio} onChange={(event) => setForm((current) => ({ ...current, bio: event.target.value }))} />
-        </label>
-        <label className="checkbox-row">
-          <input
-            type="checkbox"
-            checked={form.showLatestBodyRecord}
-            onChange={(event) => setForm((current) => ({ ...current, showLatestBodyRecord: event.target.checked }))}
-          />
-          Show latest body record on public profile
         </label>
         <button className="button primary" type="submit">Save profile</button>
       </form>

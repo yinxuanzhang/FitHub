@@ -26,8 +26,15 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("token");
   }
 
-  function updateProfile() {
+  async function updateProfile({name,avatarUrl,bio}) {
     // TODO: connect to backend profile update later
+    await axios.put('http://localhost:3000/api/user', {
+      name,avatarUrl,bio
+    }, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem("token")}`
+      }
+    }); 
   }
 
   function getUserById(userId) {

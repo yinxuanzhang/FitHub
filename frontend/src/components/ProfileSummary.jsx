@@ -48,7 +48,7 @@ export default function ProfileSummary({ user, program, latestBodyRecord, posts,
               )}
             </>
           ) : (
-            <p>Body records are private.</p>
+            <p>No body records yet.</p>
           )}
         </section>
       </div>
