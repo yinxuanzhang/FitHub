@@ -3,7 +3,7 @@ import PageHeader from "../components/PageHeader.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useFitnessData } from "../context/FitnessDataContext.jsx";
 import { ACTIVITY_LEVELS, estimateTDEE, formatDate } from "../utils/fitness.js";
-
+import axios from "axios";
 const PHASE_EXPLANATIONS = {
   Cutting: "Your calories are below estimated maintenance, so this plan is likely for fat loss.",
   Bulking: "Your calories are above estimated maintenance, so this plan is likely for muscle gain.",
@@ -43,8 +43,8 @@ export default function DietPlanPage() {
   function updateField(field, value) {
     setForm((current) => ({ ...current, [field]: value }));
   }
-
-  function handleSubmit(event) {
+//
+   async function handleSubmit(event) {
     event.preventDefault();
     if (!form.calories) return;
     addDietPlan({
@@ -54,6 +54,19 @@ export default function DietPlanPage() {
       carbs: Number(form.carbs),
       fat: Number(form.fat),
       notes: form.notes
+    });
+    const token=localStorage.getItem("token");
+    await axios.post("http://localhost:3000/api/diet-plans", {
+      ...form,
+      calories: Number(form.calories),
+      protein: Number(form.protein),
+      carbs: Number(form.carbs),
+      fat: Number(form.fat),
+      notes: form.notes
+    }, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
     });
     setForm({ calories: "", protein: "", carbs: "", fat: "", notes: "" });
   }

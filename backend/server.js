@@ -120,7 +120,25 @@ app.get('/api/body-records',authMiddleware,async(req,res)=>{
     res.status(500).json({message:"Internal server error"});
   }
 });    
-
+app.post('/api/diet-plans',authMiddleware,async(req,res)=>{
+  try{
+    const{calories,protein,carbs,fat,notes}=req.body;
+    const plan=await prisma.dietRecords.create({
+      data:{
+        userId:req.user.id,
+        calories,
+        protein,
+        carbs,
+        fat,
+        notes
+       }
+    });
+    res.status(201).json(plan);
+  }catch(error){
+    res.status(500).json({message:"Internal server error"});
+  }
+});
+     
 app.listen(port,()=>{
   console.log(`server is running at ${port}`)
 });
