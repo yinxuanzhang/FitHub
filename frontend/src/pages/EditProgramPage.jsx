@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader.jsx";
 import { useProgram } from "../context/ProgramContext.jsx";
-
+import axios from "axios";
 const blankSet = () => ({ reps: "", weight: "" });
 const blankExercise = () => ({
   id: crypto.randomUUID(),
@@ -124,9 +124,17 @@ export default function EditProgramPage() {
     }));
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     createProgramVersion(snapshot, changeSummary);
+    await axios.post("http://localhost:3000/api/programs", 
+      { snapshot },{
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem("token")}`
+        }
+      }
+    );      
+      
     navigate("/program");
   }
 

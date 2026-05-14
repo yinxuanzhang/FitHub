@@ -99,21 +99,7 @@ app.post('/api/body-records',authMiddleware,async(req,res)=>{
   res.status(500).json({message:"Internal server error"});
 }});
 
-app.get('/api/user',async(req,res)=>{
-  try{
-    const user=await prisma.user.findMany(
-      {select:{
-        id:true,
-        email:true,
-        name:true,
-        createdAt:true,
-      },}
-    );
-    res.status(200).json(user);
-  }catch(error){
-    res.status(500).json({message:"Internal server error"});
-  }
-})
+
 app.get('/api/body-records',authMiddleware,async(req,res)=>{
   try{
     const records=await prisma.bodyRecords.findMany({
@@ -187,6 +173,7 @@ app.put('/api/user',authMiddleware,async(req,res)=>{
     res.status(500).json({message:"Internal server error"});
   }
 });
+
 app.get('/api/program',authMiddleware,async(req,res)=>{
   try{
     const program=await prisma.program.findUnique({
@@ -199,6 +186,66 @@ app.get('/api/program',authMiddleware,async(req,res)=>{
     }
     res.status(200).json(program);
   }catch(error){
+    res.status(500).json({message:"Internal server error"});
+  }
+});
+app.post('/api/programs',authMiddleware,async(req,res)=>{
+  try{
+    const{snapshot}=req.body;
+    let program=await prisma.program.findUnique({
+      where:{userId:req.user.id}
+    });
+    if(!program){
+      program=await prisma.program.create({
+        data:{
+          userId:req.user.id,
+          name:"My Training Program",
+        }
+      });
+    }
+
+    const latestVersion = await prisma.programVersion.findFirst({
+      where:{programId:program.id},
+      orderBy:{versionNumber:'desc'}
+    });
+    const nextVersionNumber = (latestVersion?.versionNumber ?? 0) + 1;
+
+    const updatedProgram=await prisma.program.update({
+      where:{userId:req.user.id},
+      data:{
+        versions:{
+          create:{
+            versionNumber:nextVersionNumber,
+            changeSummary:snapshot.changeSummary,
+            categories:{
+              create:snapshot.categories.map((category)=>({
+                name:category.name,
+                order:category.order || 0,
+                notes:category.notes || "",
+                exercises:{
+                  create:category.exercises.map((exercise)=>({
+                    name:exercise.name,
+                    order:exercise.order || 0,
+                    notes:exercise.notes || "",
+                    sets:{
+                      create:exercise.sets.map((set)=>({
+                        reps:set.reps,
+                        weight:set.weight,
+                        order:set.order || 0
+                      }))
+                    }
+                  }))
+                }
+              }))
+            }
+          }
+        }
+      },
+      include:{versions:true}
+    });
+    res.status(200).json(updatedProgram);
+  }catch(error){
+    console.error('Error creating program version:', error);
     res.status(500).json({message:"Internal server error"});
   }
 });

@@ -1,7 +1,7 @@
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useMemo, useState, useEffect } from "react";
 import { trainingPrograms } from "../data/mockData.js";
 import { useAuth } from "./AuthContext.jsx";
-
+import axios from "axios";
 const ProgramContext = createContext(null);
 
 function cloneProgramVersion(version) {
@@ -10,39 +10,47 @@ function cloneProgramVersion(version) {
 
 export function ProgramProvider({ children }) {
   const { currentUser } = useAuth();
-  const [programs, setPrograms] = useState(trainingPrograms);
-  const userId = currentUser?.id;
-  async function fetchProgramFromBackend(userId) {
-   const response = await axios.get('http://localhost:3000/api/program', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem("token")}`
+  const [program, setProgram] = useState(createEmptyProgram());
+
+  useEffect(() => {
+    if (currentUser) {
+      fetchProgramFromBackend();
+    }
+  }, [currentUser]);
+
+  async function fetchProgramFromBackend() {
+    try {
+      const response = await axios.get('http://localhost:3000/api/program', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem("token")}`
+        }
+      });
+      if (response.status === 200) {
+        setProgram(response.data);
       }
-    });
+    } catch (error) {
+      console.error('Failed to fetch program:', error);
+      setProgram(createEmptyProgram(currentUser?.id));
+    }
   }
-  const program = programs.find((item) => item.userId === userId) || createEmptyProgram(userId);
 
   function createProgramVersion(nextSnapshot, changeSummary) {
-    if (!userId) return;
-    setPrograms((current) => {
-      const existingProgram = current.find((item) => item.userId === userId) || createEmptyProgram(userId);
-      const latestVersionNumber = Math.max(...existingProgram.versions.map((version) => version.versionNumber));
-      const nextVersion = {
-        ...nextSnapshot,
-        id: crypto.randomUUID(),
-        versionNumber: latestVersionNumber + 1,
-        createdAt: new Date().toISOString().slice(0, 10),
-        changeSummary: changeSummary || "Updated program structure."
-      };
+    if (!currentUser) return;
+    const latestVersionNumber = Math.max(...program.versions.map((version) => version.versionNumber));
+    const nextVersion = {
+      ...nextSnapshot,
+      id: crypto.randomUUID(),
+      versionNumber: latestVersionNumber + 1,
+      createdAt: new Date().toISOString().slice(0, 10),
+      changeSummary: changeSummary || "Updated program structure."
+    };
 
-      const nextProgram = {
-        ...existingProgram,
-        versions: [nextVersion, ...existingProgram.versions]
-      };
+    const nextProgram = {
+      ...program,
+      versions: [nextVersion, ...program.versions]
+    };
 
-      return current.some((item) => item.userId === userId)
-        ? current.map((item) => (item.userId === userId ? nextProgram : item))
-        : [...current, nextProgram];
-    });
+    setProgram(nextProgram);
   }
 
   const value = useMemo(() => {
@@ -52,9 +60,8 @@ export function ProgramProvider({ children }) {
       currentVersion,
       cloneCurrentVersion: () => cloneProgramVersion(currentVersion),
       createProgramVersion,
-      getProgramByUserId: (profileUserId) => programs.find((item) => item.userId === profileUserId)
     };
-  }, [program, programs, userId]);
+  }, [program]);
 
   return <ProgramContext.Provider value={value}>{children}</ProgramContext.Provider>;
 }
