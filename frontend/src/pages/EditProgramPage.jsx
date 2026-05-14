@@ -127,8 +127,10 @@ export default function EditProgramPage() {
   async function handleSubmit(event) {
     event.preventDefault();
     createProgramVersion(snapshot, changeSummary);
+    console
+.log("Submitting new program version:", { snapshot, changeSummary });
     await axios.post("http://localhost:3000/api/programs", 
-      { snapshot },{
+      { snapshot, changeSummary },{
         headers: {
           'Authorization': `Bearer ${localStorage.getItem("token")}`
         }

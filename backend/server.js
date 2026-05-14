@@ -8,7 +8,7 @@ const port=3000;
 app.use(cors());
 app.use(express.json());
 
-
+//前端向后端发送请求api
 app.post('/api/register',async (req,res)=>{
   try{
     const {name,email,password}=req.body;
@@ -100,17 +100,7 @@ app.post('/api/body-records',authMiddleware,async(req,res)=>{
 }});
 
 
-app.get('/api/body-records',authMiddleware,async(req,res)=>{
-  try{
-    const records=await prisma.bodyRecords.findMany({
-      where:{userId:req.user.id},
-      orderBy:{date:'desc'},
-    });
-    res.status(200).json(records);
-  }catch(error){
-    res.status(500).json({message:"Internal server error"});
-  }
-});    
+   
 app.post('/api/diet-plans',authMiddleware,async(req,res)=>{
   try{
     const{calories,protein,carbs,fat,notes}=req.body;
@@ -174,24 +164,10 @@ app.put('/api/user',authMiddleware,async(req,res)=>{
   }
 });
 
-app.get('/api/program',authMiddleware,async(req,res)=>{
-  try{
-    const program=await prisma.program.findUnique({
-      where:{userId:req.user.id},
-      include:{versions:true}
-    });
-    if(!program){
-      res.status(404).json({message:"Program not found"});
-      return;
-    }
-    res.status(200).json(program);
-  }catch(error){
-    res.status(500).json({message:"Internal server error"});
-  }
-});
+
 app.post('/api/programs',authMiddleware,async(req,res)=>{
   try{
-    const{snapshot}=req.body;
+    const{snapshot,changeSummary}=req.body;
     let program=await prisma.program.findUnique({
       where:{userId:req.user.id}
     });
@@ -216,22 +192,22 @@ app.post('/api/programs',authMiddleware,async(req,res)=>{
         versions:{
           create:{
             versionNumber:nextVersionNumber,
-            changeSummary:snapshot.changeSummary,
+            changeSummary:changeSummary,
             categories:{
-              create:snapshot.categories.map((category)=>({
+              create:(snapshot.categories||[]).map((category)=>({
                 name:category.name,
                 order:category.order || 0,
                 notes:category.notes || "",
                 exercises:{
-                  create:category.exercises.map((exercise)=>({
+                  create:(category.exercises||[]).map((exercise)=>({
                     name:exercise.name,
                     order:exercise.order || 0,
                     notes:exercise.notes || "",
                     sets:{
-                      create:exercise.sets.map((set)=>({
-                        reps:set.reps,
-                        weight:set.weight,
-                        order:set.order || 0
+                      create:(exercise.sets||[]).map((set)=>({
+                        reps:Number(set.reps),
+                        weight:Number(set.weight),
+                        order:Number(set.order) || 0
                       }))
                     }
                   }))
@@ -241,11 +217,44 @@ app.post('/api/programs',authMiddleware,async(req,res)=>{
           }
         }
       },
-      include:{versions:true}
-    });
+      include:{versions :{
+        include:{categories:{
+          include:{
+            exercises:{
+              include:{
+                sets:true
+              }
+            }
+          }
+        }       
+      }
+
+      }
+    }});
     res.status(200).json(updatedProgram);
   }catch(error){
     console.error('Error creating program version:', error);
+    res.status(500).json({message:"Internal server error"});
+  }
+});
+//backend send data to frontend
+app.get('/api/fitness-data',authMiddleware,async(req,res)=>{
+  try{
+    const BodyRecords=await prisma.BodyRecords.findMany({
+      where:{userId:req.user.id},
+      orderBy:{date:'desc'}
+    });
+    const DietRecords=await prisma.DietRecords.findMany({
+      where:{userId:req.user.id},
+      orderBy:{createdAt:'desc'}
+    });
+    const Posts=await prisma.Posts.findMany({
+      where:{userId:req.user.id},
+      orderBy:{createdAt:'desc'}
+    });
+    res.status(200).json({ BodyRecords, DietRecords, Posts });
+  }catch(error){
+    console.error('Error fetching fitness data:', error);
     res.status(500).json({message:"Internal server error"});
   }
 });
