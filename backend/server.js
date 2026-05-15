@@ -258,6 +258,44 @@ app.get('/api/fitness-data',authMiddleware,async(req,res)=>{
     res.status(500).json({message:"Internal server error"});
   }
 });
+app.get('/api/program',authMiddleware,async(req,res)=>{
+  try{
+    const program=await prisma.program.findUnique({
+      where:{userId:req.user.id},
+      include:{
+        versions:{
+          orderBy:{versionNumber:'desc'},
+          include:{
+            categories:{
+              orderBy:{order:'asc'},
+              include:{
+                exercises:{
+                  orderBy:{order:'asc'},
+                  include:{
+                    sets:{orderBy:{order:'asc'}}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+    if(!program){
+      res.status(200).json({
+        id:`program-${req.user.id}`,
+        userId:req.user.id,
+        name:"My Training Program",
+        versions:[]
+      });
+      return;
+    }
+    res.status(200).json(program);
+  }catch(error){
+    console.error('Error fetching program:', error);
+    res.status(500).json({message:"Internal server error"});
+  }
+});
 app.listen(port,()=>{
   console.log(`server is running at ${port}`)
 });

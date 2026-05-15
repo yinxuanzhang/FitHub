@@ -19,7 +19,7 @@ export function ProgramProvider({ children }) {
   }, [currentUser]);
 
   async function fetchProgramFromBackend() {
-    /*try {
+    try {
       const response = await axios.get('http://localhost:3000/api/program', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem("token")}`
@@ -31,7 +31,7 @@ export function ProgramProvider({ children }) {
     } catch (error) {
       console.error('Failed to fetch program:', error);
       setProgram(createEmptyProgram(currentUser?.id));
-    }*/
+    }
   }
 
   function createProgramVersion(nextSnapshot, changeSummary) {
