@@ -296,6 +296,13 @@ app.get('/api/program',authMiddleware,async(req,res)=>{
     res.status(500).json({message:"Internal server error"});
   }
 });
+//token验证接口
+app.get('/api/validate-token',authMiddleware,(req,res)=>{
+ 
+     res.status(200).json({user:req.user})
+  
+ 
+});
 app.listen(port,()=>{
   console.log(`server is running at ${port}`)
 });

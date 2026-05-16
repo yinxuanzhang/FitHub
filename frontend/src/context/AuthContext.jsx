@@ -20,14 +20,25 @@ export function AuthProvider({ children }) {
       };
     }
   }
-
+  async function validateToken(token) {
+    try {
+      const response = await axios.get("http://localhost:3000/api/validate-token", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setCurrentUser(response.data.user);
+    } catch (error) {
+      console.error("Token validation failed:", error);
+      logout();
+    }
+  }
   function logout() {
     setCurrentUser(null);
     localStorage.removeItem("token");
   }
 
   async function updateProfile({name,avatarUrl,bio}) {
-    // TODO: connect to backend profile update later
     await axios.put('http://localhost:3000/api/user', {
       name,avatarUrl,bio
     }, {
@@ -49,7 +60,8 @@ export function AuthProvider({ children }) {
       login,
       logout,
       updateProfile,
-      getUserById
+      getUserById,
+      validateToken
     }),
     [currentUser]
   );
