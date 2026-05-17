@@ -16,7 +16,7 @@ export default function DietPlanPage() {
   const [form, setForm] = useState({ calories: "", protein: "", carbs: "", fat: "", notes: "" });
   const [tdeeForm, setTdeeForm] = useState({
     sex: currentUser?.sex || "",
-    birthDate: currentUser?.birthDate || "",
+    birthDate: currentUser?.dateOfBirth || "",
     height: currentUser?.height?.toString() || "",
     activityLevel: currentUser?.activityLevel || "moderate",
   });
@@ -45,7 +45,7 @@ export default function DietPlanPage() {
   const tdeeProfile = {
     weight: latestRecord?.weight,
     height: currentUser?.height,
-    birthDate: currentUser?.birthDate,
+    birthDate: currentUser?.dateOfBirth,
     sex: currentUser?.sex,
     activityLevel: currentUser?.activityLevel ?? "moderate",
   };

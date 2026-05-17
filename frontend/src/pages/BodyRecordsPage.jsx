@@ -10,7 +10,7 @@ export default function BodyRecordsPage() {
   const { currentUser } = useAuth();
   const { bodyRecords: records, dietPlans, addBodyRecord } = useFitnessData();
   const userProfile = {
-    birthDate: currentUser?.birthDate,
+    birthDate: currentUser?.dateOfBirth,
     sex: currentUser?.sex,
     activityLevel: currentUser?.activityLevel ?? "moderate",
   };

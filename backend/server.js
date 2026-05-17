@@ -297,11 +297,31 @@ app.get('/api/program',authMiddleware,async(req,res)=>{
   }
 });
 //token验证接口
-app.get('/api/validate-token',authMiddleware,(req,res)=>{
- 
-     res.status(200).json({user:req.user})
-  
- 
+app.get('/api/validate-token',authMiddleware,async(req,res)=>{
+    try{
+      const user= await prisma.user.findUnique({
+        where:{id:req.user.id},
+        select:{
+          id:true,
+          email:true,
+          name:true,
+          createdAt:true,
+          dateOfBirth:true,
+          height:true,
+          activityLevel:true, 
+          sex:true,
+          bio:true,
+          avatar:true,} 
+    
+    });
+    if(!user){
+      return res.status(401).json({message:"User not found"});    
+    }
+    res.status(200).json({user});
+  }catch(error){
+    console.error('Token validation error:', error);
+    res.status(500).json({message:"Internal server error"});
+  }
 });
 app.listen(port,()=>{
   console.log(`server is running at ${port}`)

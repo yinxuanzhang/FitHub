@@ -81,8 +81,8 @@ export default function ProfileSummary({ user, program, latestBodyRecord, posts,
 
 function ProfileAvatar({ user, className }) {
   const cls = className || "profile-avatar";
-  if (user.avatarUrl) {
-    return <img className={cls} src={user.avatarUrl} alt="" />;
+  if (user.avatar) {
+    return <img className={cls} src={user.avatar} alt="" />;
   }
   return <div className={`${cls} fallback`}>{user.name?.charAt(0) || "U"}</div>;
 }

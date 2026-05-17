@@ -39,13 +39,14 @@ export function AuthProvider({ children }) {
   }
 
   async function updateProfile({name,avatarUrl,bio}) {
-    await axios.put('http://localhost:3000/api/user', {
+    const response = await axios.put('http://localhost:3000/api/user', {
       name,avatarUrl,bio
     }, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem("token")}`
       }
     }); 
+    setCurrentUser(response.data);
   }
 
   function getUserById(userId) {

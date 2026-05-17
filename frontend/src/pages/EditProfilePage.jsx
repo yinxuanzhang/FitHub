@@ -8,13 +8,13 @@ export default function EditProfilePage() {
   const { currentUser, updateProfile } = useAuth();
   const [form, setForm] = useState({
     name: currentUser.name,
-    avatarUrl: currentUser.avatarUrl || "",
+    avatarUrl: currentUser.avatar || "",
     bio: currentUser.bio || ""
   });
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    updateProfile({
+   await updateProfile({
       name: form.name,
       avatarUrl: form.avatarUrl,
       bio: form.bio

@@ -120,8 +120,8 @@ export default function SocialPage() {
 }
 
 function Avatar({ user, className }) {
-  if (user?.avatarUrl) {
-    return <img className={className} src={user.avatarUrl} alt="" />;
+  if (user?.avatar) {
+    return <img className={className} src={user.avatar} alt="" />;
   }
   return <span className={`${className} fallback`}>{user?.name?.charAt(0) || "U"}</span>;
 }

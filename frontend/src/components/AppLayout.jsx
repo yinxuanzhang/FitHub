@@ -75,7 +75,7 @@ export default function AppLayout() {
         {isAuthenticated && (
           <div className="sidebar-footer">
             <div className="nav-user" title={currentUser.name}>
-              <Avatar src={currentUser.avatarUrl} name={currentUser.name} />
+              <Avatar src={currentUser.avatar} name={currentUser.name} />
               <span className="nav-label">{currentUser.name}</span>
             </div>
             <button className="logout-btn" type="button" onClick={handleLogout}>
