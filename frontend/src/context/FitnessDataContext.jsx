@@ -11,9 +11,10 @@ export function FitnessDataProvider({ children }) {
   const [posts, setPosts] = useState(initialPosts);
 
   const userId = currentUser?.id;
+  //optimize：Fetch again only when the authenticated user changes.
   useEffect(()=>{
     async function fetchFitnessData() {
-      if (!currentUser) return;
+      if (!userId) return;
       try {
         const response = await axios.get('http://localhost:3000/api/fitness-data', {
           headers: {
@@ -31,7 +32,7 @@ export function FitnessDataProvider({ children }) {
       }
     }
     fetchFitnessData();
-  },[currentUser]);
+  },[userId]);
 
  
   const currentUserBodyRecords = bodyRecords.filter((record) => record.userId === userId);

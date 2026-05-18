@@ -11,12 +11,12 @@ function cloneProgramVersion(version) {
 export function ProgramProvider({ children }) {
   const { currentUser } = useAuth();
   const [program, setProgram] = useState(createEmptyProgram());
-
+  const userId = currentUser?.id;
   useEffect(() => {
-    if (currentUser) {
+    if (userId) {
       fetchProgramFromBackend();
     }
-  }, [currentUser]);
+  }, [userId]);
 
   async function fetchProgramFromBackend() {
     try {
