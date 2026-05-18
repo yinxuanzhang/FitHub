@@ -2,26 +2,52 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
-
+import axios from "axios";
 export default function EditProfilePage() {
   const navigate = useNavigate();
-  const { currentUser, updateProfile } = useAuth();
+  const {currentUser, updateProfile } = useAuth();
+  const [avatarFile, setAvatarFile] = useState(null);
+  
   const [form, setForm] = useState({
     name: currentUser.name,
-    avatarUrl: currentUser.avatar || "",
+    avatarUrl: currentUser.avatar,
     bio: currentUser.bio || ""
   });
 
   async function handleSubmit(event) {
     event.preventDefault();
+   const newAvatarUrl = await updateAvatar(avatarFile);
    await updateProfile({
       name: form.name,
-      avatarUrl: form.avatarUrl,
+      avatarUrl: newAvatarUrl||form.avatarUrl,
       bio: form.bio
     });
     navigate("/profile");
   }
-
+  async function updateAvatar(avatarFile) {
+    if (!avatarFile) return;
+    
+    try {
+      const response = await axios.post("http://localhost:3000/api/uploads/avatar-url",  
+        {
+          fileName: avatarFile.name,
+          fileType: avatarFile.type
+        },
+        {
+          headers: {
+          
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          }
+        }
+      );
+      if (response.status === 200) {
+        
+        setAvatarFile(null);
+        return response.data.avatarUrl;
+      }
+  }   catch (error) { console.error("Failed to upload avatar:", error);
+    }
+} 
   return (
     <div className="page-stack">
       <PageHeader
@@ -36,8 +62,13 @@ export default function EditProfilePage() {
           <input value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} />
         </label>
         <label>
-          Avatar URL
-          <input value={form.avatarUrl} onChange={(event) => setForm((current) => ({ ...current, avatarUrl: event.target.value }))} />
+          Avatar
+          <input type="file" accept="image/*" onChange={(event)=>{
+            const file = event.target.files[0];
+            setAvatarFile(file);
+            
+          }} />
+
         </label>
         <label>
           Bio
