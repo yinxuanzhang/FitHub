@@ -43,6 +43,13 @@ export default function EditProfilePage() {
       if (response.status === 200) {
         
         setAvatarFile(null);
+        const uploadresponse=
+        await axios.put(response.data.uploadUrl, avatarFile, {
+          headers: {
+            "Content-Type": avatarFile.type
+          }
+        });
+        if(uploadresponse.status>=400) throw new Error("Failed to upload avatar");
         return response.data.avatarUrl;
       }
   }   catch (error) { console.error("Failed to upload avatar:", error);

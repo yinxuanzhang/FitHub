@@ -3,6 +3,10 @@ import cors from 'cors';
 import bcrypt from 'bcrypt';
 import{prisma} from './lib/prisma.js';
 import jwt from 'jsonwebtoken';
+import{s3Client} from './lib/s3Client.js';
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { get } from 'node:http';
 const app=express();
 const port=3000;
 app.use(cors());
@@ -320,6 +324,36 @@ app.get('/api/validate-token',authMiddleware,async(req,res)=>{
     res.status(200).json({user});
   }catch(error){
     console.error('Token validation error:', error);
+    res.status(500).json({message:"Internal server error"});
+  }
+});
+//头像上传接口
+app.post('/api/uploads/avatar-url',authMiddleware,async(req,res)=>{
+  try{
+    const{fileName,fileType}=req.body;
+    const allowedTypes=['image/jpeg','image/png','image/gif'];
+    if(!allowedTypes.includes(fileType)){
+      return res.status(400).json({message:"Invalid file type"});
+    }
+    // Further processing for avatar upload
+    const fileExt=fileType.split('/')[1];
+    const key=`avatars/${req.user.id}/${Date.now()}.${fileExt}`;
+    const commond=new PutObjectCommand({
+    Bucket:process.env.AWS_S3_BUCKET_NAME,
+    Key:key,
+    ContentType:fileType,
+    
+    });
+    const uploadUrl=await getSignedUrl(s3Client,commond,{expiresIn:60});
+    const avatarUrl=`${process.env.AWS_S3_PUBLIC_URL}/${key}`;
+    await prisma.user.update({
+      where:{id:req.user.id},
+      data:{avatar:avatarUrl}
+    });
+    res.status(200).json({uploadUrl, avatarUrl});
+  }
+  catch(error){
+    console.error('Error uploading avatar:', error);
     res.status(500).json({message:"Internal server error"});
   }
 });
