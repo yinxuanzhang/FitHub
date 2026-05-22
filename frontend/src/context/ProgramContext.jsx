@@ -26,7 +26,12 @@ export function ProgramProvider({ children }) {
         }
       });
       if (response.status === 200) {
-        setProgram(response.data);
+        if(response.data.versions.length === 0){
+          setProgram(createEmptyProgram(currentUser.id));
+        }else {
+           setProgram(response.data);
+        }
+       
       }
     } catch (error) {
       console.error('Failed to fetch program:', error);

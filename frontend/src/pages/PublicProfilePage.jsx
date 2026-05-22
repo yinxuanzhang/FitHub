@@ -9,7 +9,7 @@ export default function PublicProfilePage() {
   const { userId } = useParams();
   const { getUserById } = useAuth();
   const { getProgramByUserId } = useProgram();
-  const { getLatestBodyRecord, getPublicPosts } = useFitnessData();
+  const { getLatestBodyRecord, getPosts } = useFitnessData();
   const user = getUserById(userId);
 
   if (!user) {
@@ -27,7 +27,7 @@ export default function PublicProfilePage() {
       user={user}
       program={getProgramByUserId(user.id)}
       latestBodyRecord={latestBodyRecord}
-      posts={getPublicPosts(user.id)}
+      posts={getPosts(user.id)}
     />
   );
 }

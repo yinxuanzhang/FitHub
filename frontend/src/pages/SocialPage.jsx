@@ -2,25 +2,48 @@ import { useState } from "react";
 import PageHeader from "../components/PageHeader.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useFitnessData } from "../context/FitnessDataContext.jsx";
-
+import axios from "axios";
 const SAMPLE_POST_IMAGE = "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1200&q=80";
 
 export default function SocialPage() {
   const { currentUser } = useAuth();
-  const { posts, addPost } = useFitnessData();
+  const { allPosts, addPost,setPosts } = useFitnessData();
   const [caption, setCaption] = useState("");
   const [visibility, setVisibility] = useState("public");
   const [imageUrl, setImageUrl] = useState("");
   const [isComposerOpen, setIsComposerOpen] = useState(false);
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     if (!caption.trim()) return;
     addPost({ createdAt: new Date().toISOString(), visibility, caption, imageUrl });
+    await axios.post('http://localhost:3000/api/posts', {
+      caption,
+      visibility,
+      imageUrl
+    }, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem("token")}`
+      }
+    }).catch((error) => {
+      console.error('Failed to create post:', error);
+    });
+    await axios.get('http://localhost:3000/api/posts', {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem("token")}`
+      }
+    }).then((response) => {
+      if (response.status === 200) {
+        const { BodyRecords, DietRecords, Posts } = response.data;
+        
+        setPosts(Posts);
+      }
+    });
     setCaption("");
     setVisibility("public");
     setImageUrl("");
     setIsComposerOpen(false);
+    
   }
 
   function closeComposer() {
@@ -40,15 +63,15 @@ export default function SocialPage() {
       />
 
       <section className="post-list">
-        {[...posts].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map((post) => {
+        {[...allPosts].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map((post) => {
           const hasImage = Boolean(post.imageUrl);
           return (
           <article className={`post-card ${hasImage ? "has-image" : "text-only"}`} key={post.id}>
             <div className="post-content">
               <div className="post-meta">
-                <Avatar user={currentUser} className="feed-avatar" />
+                <Avatar user={post.user} className="feed-avatar" />
                 <div className="post-author">
-                  <strong>{currentUser.name}</strong>
+                  <strong>{post.user?.name}</strong>
                   <span>{formatPostDate(post.createdAt)}</span>
                 </div>
                 <span className={`visibility-pill ${post.visibility === "public" ? "public" : "private"}`}>

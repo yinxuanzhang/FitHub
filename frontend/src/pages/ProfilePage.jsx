@@ -6,7 +6,7 @@ import { useProgram } from "../context/ProgramContext.jsx";
 export default function ProfilePage() {
   const { currentUser } = useAuth();
   const { program } = useProgram();
-  const { getLatestBodyRecord, getPublicPosts } = useFitnessData();
+  const { getLatestBodyRecord, getPosts } = useFitnessData();
  
   const latestBodyRecord = getLatestBodyRecord(currentUser.id);
 
@@ -15,7 +15,7 @@ export default function ProfilePage() {
       user={currentUser}
       program={program}
       latestBodyRecord={latestBodyRecord}
-      posts={getPublicPosts(currentUser.id)}
+      posts={getPosts(currentUser.id)}
       isOwnProfile
     />
   );

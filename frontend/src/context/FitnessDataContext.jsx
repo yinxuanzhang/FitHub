@@ -6,9 +6,9 @@ const FitnessDataContext = createContext(null);
 
 export function FitnessDataProvider({ children }) {
   const {currentUser} = useAuth();
-  const [bodyRecords, setBodyRecords] = useState(initialBodyRecords);
-  const [dietPlans, setDietPlans] = useState(initialDietPlans);
-  const [posts, setPosts] = useState(initialPosts);
+  const [bodyRecords, setBodyRecords] = useState([]);
+  const [dietPlans, setDietPlans] = useState([]);
+  const [posts, setPosts] = useState([]);
 
   const userId = currentUser?.id;
   //optimize：Fetch again only when the authenticated user changes.
@@ -60,10 +60,8 @@ export function FitnessDataProvider({ children }) {
       .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
   }
 
-  function getPublicPosts(userIdToRead) {
-    return posts
-      .filter((post) => post.userId === userIdToRead && post.visibility === "public")
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  function getPosts(userIdToRead) {
+    return posts.filter((post) => post.userId === userIdToRead);
   }
 
   const value = useMemo(
@@ -76,7 +74,8 @@ export function FitnessDataProvider({ children }) {
       addDietPlan,
       addPost,
       getLatestBodyRecord,
-      getPublicPosts
+      getPosts,
+      setPosts
     }),
     [bodyRecords, dietPlans, posts, userId]
   );
