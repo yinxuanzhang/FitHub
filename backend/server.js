@@ -344,7 +344,7 @@ app.post('/api/uploads/avatar-url',authMiddleware,async(req,res)=>{
     ContentType:fileType,
     
     });
-    const uploadUrl=await getSignedUrl(s3Client,commond,{expiresIn:60});
+    const uploadUrl=await getSignedUrl(s3Client,commond,{expiresIn:300});
     const avatarUrl=`${process.env.AWS_S3_PUBLIC_URL}/${key}`;
     await prisma.user.update({
       where:{id:req.user.id},
@@ -357,10 +357,36 @@ app.post('/api/uploads/avatar-url',authMiddleware,async(req,res)=>{
     res.status(500).json({message:"Internal server error"});
   }
 });
+//photos of posts
+app.post('/api/uploads/post-image-url',authMiddleware,async(req,res)=>{
+  try{
+    const{fileName,fileType}=req.body;
+    const allowedTypes=['image/jpeg','image/png','image/gif'];
+    if(!allowedTypes.includes(fileType)){
+      return res.status(400).json({message:"Invalid file type"});
+    }
+    const fileExt=fileType.split('/')[1];
+    const key=`posts/${req.user.id}/${Date.now()}.${fileExt}`;
+    const commond=new PutObjectCommand({
+      Bucket:process.env.AWS_S3_BUCKET_NAME,
+      Key:key,
+      ContentType:fileType,
+    });
+    const uploadUrl=await getSignedUrl(s3Client,commond,{expiresIn:300});
+    const imageUrl=`${process.env.AWS_S3_PUBLIC_URL}/${key}`;
+    res.status(200).json({uploadUrl, imageUrl});
+  }catch(error){
+    console.error('Error uploading post image:', error);
+    res.status(500).json({message:"Internal server error"});
+  }
+});
+
+
 //posts endpoint
 app.post('/api/posts',authMiddleware,async(req,res)=>{
   try{
     const{caption,visibility,imageUrl}=req.body;
+  
     const post=await prisma.Posts.create({
       data:{
         userId:req.user.id,

@@ -13,14 +13,44 @@ export default function SocialPage() {
   const [imageUrl, setImageUrl] = useState("");
   const [isComposerOpen, setIsComposerOpen] = useState(false);
 
+  async function getImageUrl(file) {
+    if (!file) return null;
+
+    try {
+      const response = await axios.post("http://localhost:3000/api/uploads/post-image-url",
+        {
+          fileName: file.name,
+          fileType: file.type
+        },
+        {
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          }
+        });
+      const { uploadUrl, imageUrl } = response.data;
+      const uploadResponse = await axios.put(uploadUrl, file, {
+        headers: {
+          "Content-Type": file.type
+        }
+      });
+      if (uploadResponse.status >= 400) throw new Error("Failed to upload post image");
+      return imageUrl;
+    } catch (error) {
+      console.error("Failed to upload post image:", error);
+      return null;
+    }
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
     if (!caption.trim()) return;
-    addPost({ createdAt: new Date().toISOString(), visibility, caption, imageUrl });
+    const finalImageUrl = await getImageUrl(imageUrl);
+    if (imageUrl && !finalImageUrl) return;
+    addPost({ createdAt: new Date().toISOString(), visibility, caption, imageUrl: finalImageUrl });
     await axios.post('http://localhost:3000/api/posts', {
       caption,
       visibility,
-      imageUrl
+      imageUrl: finalImageUrl
     }, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem("token")}`
@@ -28,13 +58,15 @@ export default function SocialPage() {
     }).catch((error) => {
       console.error('Failed to create post:', error);
     });
+    
+    
     await axios.get('http://localhost:3000/api/posts', {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem("token")}`
       }
     }).then((response) => {
       if (response.status === 200) {
-        const { BodyRecords, DietRecords, Posts } = response.data;
+        const { Posts } = response.data;
         
         setPosts(Posts);
       }
@@ -64,7 +96,7 @@ export default function SocialPage() {
 
       <section className="post-list">
         {[...allPosts].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map((post) => {
-          const hasImage = Boolean(post.imageUrl);
+          const hasImage = Boolean(post.photos);
           return (
           <article className={`post-card ${hasImage ? "has-image" : "text-only"}`} key={post.id}>
             <div className="post-content">
@@ -79,7 +111,7 @@ export default function SocialPage() {
                 </span>
               </div>
               {hasImage && (
-                <img className="post-feed-image" src={post.imageUrl} alt={post.imageAlt || ""} />
+                <img className="post-feed-image"  src={post.photos} alt={post.photos  || ""} />
               )}
               <p className="post-caption">{post.caption}</p>
               <div className="post-actions">
@@ -117,13 +149,16 @@ export default function SocialPage() {
                   autoFocus
                 />
                 <div className="composer-footer">
-                  <button
+                  <label
                     className={`add-image-btn ${imageUrl ? "active" : ""}`}
-                    type="button"
-                    onClick={() => setImageUrl((current) => (current ? "" : SAMPLE_POST_IMAGE))}
                   >
                     {imageUrl ? "Image added" : "Add image"}
-                  </button>
+                    <input type="file" accept="image/*" onChange={
+                      (event)=>{const file=event.target.files[0];
+                        setImageUrl(file);
+                      }
+                    } />  
+                  </label>
                   <label className="visibility-control">
                     <span>Visibility</span>
                     <select value={visibility} onChange={(event) => setVisibility(event.target.value)}>
