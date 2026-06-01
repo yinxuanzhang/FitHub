@@ -12,6 +12,8 @@ export function FitnessDataProvider({ children }) {
   const[newPostsCount,setNewPostsCount] = useState(0);
   const[hasNewPosts,setHasNewPosts] = useState(false);
   const userId = currentUser?.id;
+ 
+  
   //optimize：Fetch again only when the authenticated user changes.
   useEffect(()=>{
     async function fetchFitnessData() {
@@ -27,6 +29,7 @@ export function FitnessDataProvider({ children }) {
           setBodyRecords(BodyRecords);
           setDietPlans(DietRecords);
           setPosts(Posts);
+          
         }
       } catch (error) {
         console.error('Failed to fetch fitness data:', error);
@@ -35,24 +38,31 @@ export function FitnessDataProvider({ children }) {
     fetchFitnessData();
   },[userId]);
 //automatic check new posts by other users every 30 seconds, to keep the social feed up-to-date.
+
  useEffect(()=>{
-    const lastPostCreatedAt = posts.length > 0 ? posts[0].createdAt : null;
-    setInterval(async()=>{
+   if(!userId) return;
+   const lastCheckedPostTime = posts.length > 0 ? posts[0].createdAt : null;
+   const intervalId = setInterval(async()=>{
       try{
         const response= await axios.get('http://localhost:3000/api/posts', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem("token")}`
           },
           params:{
-            after:lastPostCreatedAt
+            after:lastCheckedPostTime
           }
         });
         if(response.data.newCount>0){
           setNewPostsCount(response.data.newCount);
           setHasNewPosts(true);
+          setPosts((current)=>[...response.data.Posts,...current]);
+         
         }
-    },30000);
- },[posts]);
+    }catch(error){
+      console.error('Failed to check new posts:',error);
+    }},30000);
+    return()=>clearInterval(intervalId);
+ },[posts,userId]);
   const currentUserBodyRecords = bodyRecords.filter((record) => record.userId === userId);
   const currentUserDietPlans = dietPlans.filter((plan) => plan.userId === userId);
   const currentUserPosts = posts.filter((post) => post.userId === userId);

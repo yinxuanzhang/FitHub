@@ -404,11 +404,16 @@ app.post('/api/posts',authMiddleware,async(req,res)=>{
 //get posts endpoint
 app.get('/api/posts',authMiddleware,async(req,res)=>{
   try{
+    const after=req.query.after;
+    const where=after?{createdAt:{gt:new Date(after)}}:{};
+  
     const posts=await prisma.Posts.findMany({
+      where,
       include:{user:{select:{name:true,avatar:true}}},
       orderBy:{createdAt:'desc'}
     });
-    res.status(200).json({Posts:posts});
+    const newCount=posts.length;
+    res.status(200).json({Posts:posts, newCount});
   }catch(error){
     console.error('Error fetching posts:', error);
     res.status(500).json({message:"Internal server error"});
